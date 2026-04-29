@@ -235,20 +235,21 @@ function pauseYoBiscuit(){
 var postMissionSoundtrackAt=38,postMissionMusicEl=null;
 function playTopDogSoundtrackFrom38(){
   var paths=['Top_Dog.mp3','files/Top_Dog.mp3'];
+  if(typeof stopMusic==='function') stopMusic();
   function startAt38(el){
     var t0=postMissionSoundtrackAt;
     if(el.duration>0 && isFinite(el.duration) && t0>=el.duration) t0=Math.max(0,el.duration-0.25);
-    el.currentTime=t0;
+    try{el.currentTime=t0;}catch(e){}
   }
   function tryPath(i){
-    if(i>=paths.length) return;
+    if(i>=paths.length){startMusic();return;}
     var a=new Audio(paths[i]);
     a.preload='auto';
     a.volume=0.5;
     a.setAttribute('playsinline','');
     a.setAttribute('webkit-playsinline','');
-    a.addEventListener('error', function(){ tryPath(i+1); }, {once: true});
-    var topDogEndSec=60,topDogSwitched=false;
+    a.addEventListener('error', function(){ if(postMissionMusicEl===a)postMissionMusicEl=null; tryPath(i+1); }, {once: true});
+    var topDogEndSec=60,topDogSwitched=false,topDogStarted=false;
     function onTopDogToMain(){
       if(topDogSwitched||postMissionMusicEl!==a) return;
       topDogSwitched=true;
@@ -263,15 +264,18 @@ function playTopDogSoundtrackFrom38(){
       if(a.duration>0 && isFinite(a.duration) && a.duration>topDogEndSec) return;
       onTopDogToMain();
     });
-    a.addEventListener('loadedmetadata', function onceMeta(){
-      a.removeEventListener('loadedmetadata', onceMeta);
+    function beginTopDog(){
+      if(topDogStarted)return;
+      topDogStarted=true;
       startAt38(a);
       postMissionMusicEl=a;
       var b=document.getElementById('at');
       if(b) b.textContent='MUSIC: ON';
       var p=a.play();
       if(p && p.catch) p.catch(function(){ postMissionMusicEl=null; tryPath(i+1); });
-    }, {once: true});
+    }
+    a.addEventListener('loadedmetadata', beginTopDog, {once: true});
+    a.addEventListener('canplay', beginTopDog, {once: true});
     a.load();
   }
   tryPath(0);
@@ -3101,7 +3105,7 @@ S.levelsioDriveSpawned=false;
 S.levelsioDrivePicked=false;
 document.getElementById('mc-count').textContent=S.missionsCompleted+'/'+S.missionsRequired;
 var rem=S.missionsRequired-S.missionsCompleted;
-if(m){if(m.id==='hood_weed'){pauseYoBiscuit();playThatStashCompleteSfx();}if(m.id==='cat_chase'){S.cookieCollarHeld=false;showMission('HOME SAFE!','Cookie clips her collar back on. Good dog, Biscuit.',3500);}if(m.id==='cop_heat'){showMission('HOTDOG WEENERS!','Bike Guy hooks Biscuit up with a pack of hotdog weeners. +3 Bones',3500);}if(m.id==='levelsio_job'){showMission('JAMDOGS SECURED!','Levelsio gets his AI ideas back and rewards Biscuit with 2 packs of Jamdogs: one for Biscuit and one for Cookie.',3500);}if(m.id==='spicy_jamdog'){showMission('BUN CRATES SAVED!','Biscuit recovered the vendor\'s lost bun packages. +4 Bones',3500);}if(m.rb)addB(m.rb);addR(m.rr);}
+if(m){if(m.id==='hood_weed'){pauseYoBiscuit();}if(m.id==='cat_chase'){S.cookieCollarHeld=false;showMission('HOME SAFE!','Cookie clips her collar back on. Good dog, Biscuit.',3500);}if(m.id==='cop_heat'){showMission('HOTDOG WEENERS!','Bike Guy hooks Biscuit up with a pack of hotdog weeners. +3 Bones',3500);}if(m.id==='levelsio_job'){showMission('JAMDOGS SECURED!','Levelsio gets his AI ideas back and rewards Biscuit with 2 packs of Jamdogs: one for Biscuit and one for Cookie.',3500);}if(m.id==='spicy_jamdog'){showMission('BUN CRATES SAVED!','Biscuit recovered the vendor\'s lost bun packages. +4 Bones',3500);}if(m.rb)addB(m.rb);addR(m.rr);}
 if(m)spawnJamDogsReward(m.id);
 // Confetti burst on mission complete
 shake(0.2,0.4);
@@ -3125,6 +3129,7 @@ else{
   // Big "Cookie is Ready" overlay
   if(!S.cookieReadyShown){S.cookieReadyShown=true;setTimeout(showCookieReadyOverlay,1500);}
 }
+if(m){if(m.id==='hood_weed')playThatStashCompleteSfx();else playTopDogSoundtrackFrom38();}
 sfx('mission');eM();}
 function showCookieReadyOverlay(){
   var o=document.createElement('div');
