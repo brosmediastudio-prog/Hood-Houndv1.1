@@ -95,7 +95,7 @@ body.mp-open #tut{opacity:0.15;transition:opacity .35s ease}
 console.log("%c[HoodHound build] spicy-jamdog-crate-run-v81 (Super Fart bun crate delivery mission) loaded","background:#22aa55;color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold");
 try{
 var aC=null,mP=false,mG=null,muG=null,sG=null;
-var fxAudios={};
+var fxAudios={},fxBuffers={},fxBufferLoading=false;
 function initFxAudios(){
 if(Object.keys(fxAudios).length)return;
 fxAudios={
@@ -109,6 +109,22 @@ fxAudios[k].preload='auto';
 fxAudios[k].setAttribute('playsinline','');
 fxAudios[k].setAttribute('webkit-playsinline','');
 }
+}
+function loadFxBuffers(){
+if(!aC||fxBufferLoading)return;
+initFxAudios();
+fxBufferLoading=true;
+var keys=Object.keys(fxAudios),left=keys.length;
+if(!left){fxBufferLoading=false;return;}
+keys.forEach(function(k){
+  var src=fxAudios[k],url=src&&src.getAttribute?src.getAttribute('src'):src.src;
+  if(!url){if(--left<=0)fxBufferLoading=false;return;}
+  fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.arrayBuffer();})
+  .then(function(ab){return aC.decodeAudioData(ab);})
+  .then(function(buf){fxBuffers[k]=buf;})
+  .catch(function(){})
+  .then(function(){if(--left<=0)fxBufferLoading=false;});
+});
 }
 var yoBiscuitPlayer=null, yoBiscuitCooldown=0, yoBiscuitPathIndex=0, yoBiscuitWABuffer=null, yoBiscuitWALoading=false, yoBiscuitPrewarmTried=false;
 function yoBiscuitPathList(){
@@ -303,17 +319,22 @@ function playYoBiscuitIfClose(dt){
   }
 }
 function playFxAudio(ty){
-initFxAudios();
-var src=fxAudios[ty];
-if(!src||!src.src)return false;
-try{
-  var a=src.cloneNode(false);
-  a.volume=src.volume||1;
-  a.muted=false;
-  var p=a.play();
-  if(p&&p.catch)p.catch(function(){});
-  return true;
-}catch(e){return false;}
+if(!aC)iA();
+if(!aC)return false;
+if(aC.state==='suspended'){try{aC.resume();}catch(e){}}
+if(fxBuffers[ty]){
+  try{
+    var src=aC.createBufferSource(),gn=aC.createGain();
+    src.buffer=fxBuffers[ty];
+    gn.gain.value=0.9;
+    src.connect(gn);
+    gn.connect(sG||aC.destination);
+    src.start(0);
+    return true;
+  }catch(e0){}
+}
+loadFxBuffers();
+return false;
 }
 function iA(){if(!aC){try{aC=new(window.AudioContext||window.webkitAudioContext)();mG=aC.createGain();mG.gain.value=0.7;mG.connect(aC.destination);muG=aC.createGain();muG.gain.value=0.25;muG.connect(mG);sG=aC.createGain();sG.gain.value=0.6;sG.connect(mG);}catch(e){return;}}if(aC.state==='suspended'){try{aC.resume();}catch(e){}}}
 function sfx(ty){if(!aC)iA();if(ty==='bark'||ty==='cat'||ty==='fart'||ty==='poop'){if(playFxAudio(ty))return;}var o,g,t=aC.currentTime;g=aC.createGain();g.connect(sG);
@@ -394,8 +415,8 @@ function startMusic(){
   }
   if(!aC)iA();
   musicWanted=true;
-  if(musicBuffer){playMusicBuffer();}
-  else{decodeMusic();}
+  playSoundtrackHtmlFallback();
+  if(aC&&!musicBuffer&&!musicDecoding)setTimeout(decodeMusic,1200);
 }
 function stopMusic(){
   if(postMissionMusicEl){
@@ -409,14 +430,12 @@ function stopMusic(){
 }
 function toggleAudio(){
   if(!aC)iA();
+  if(typeof loadFxBuffers==='function')loadFxBuffers();
   var postOn=postMissionMusicEl && !postMissionMusicEl.paused;
   if(mP || postOn) stopMusic();
   else startMusic();
 }
-// Pre-warm audio: try to create context and decode music IMMEDIATELY on page load
-// On iOS the context starts suspended but decodeAudioData still works
-// This means by the time user taps, buffer is likely already decoded and music plays instantly
-(function preWarm(){try{iA();if(aC)setTimeout(decodeMusic,50);}catch(e){}})();
+// Decode short SFX after the first user gesture; keep heavy music streaming so startup stays smooth.
 // NOTE: Music auto-starts inside startGame() from user gesture (required for mobile)
 
 var S={bones:0,rep:0,heat:0,isSniffing:false,speed:0,maxSpeed:0.55,accel:0.022,keys:{},dogAngle:0,legAnim:0,bobAnim:0,interactTarget:null,gameStarted:false,cameraAngleH:0,cameraAngleV:0.4,mouseDown:false,lastMouseX:0,lastMouseY:0,missionActive:false,missionTimer:0,missionType:null,missionScore:0,velocityY:0,jumpY:0,isJumping:false,peeTimer:0,jumpHeld:false,missionsCompleted:0,missionsRequired:3,repToWinCookie:200,cookieWooed:false,cookieEnding:false,cookieEndingDone:false,cookieHouseShakeTime:0,gameWon:false,shakeAmount:0,shakeTime:0,slowMo:1,slowMoTime:0,tutorialShown:false,tutorialIdleTime:0,cookieReadyShown:false,onPlatform:null,hoodWeedPicked:false,hoodWeedHandinPending:false,copHeatReadyForReward:false,catChaseBarks:0,catCollarSpawned:false,cookieCollarHeld:false,cookieCollarBadGuyPassedOut:false,cookieCollarBadGuyPooped:false,levelsioBarks:0,levelsioDumpstersSearched:0,levelsioDriveSpawned:false,levelsioDrivePicked:false,spicyCratesCollected:0,spicyCratesReadyReturn:false,spicyStarterPicked:false,superFartReady:false,superFartUntil:0,superFartSfxAt:0,superFartSmokeAt:0,blastVX:0,blastVZ:0,turfZones:[]};
@@ -456,7 +475,7 @@ function updateParticles(dt){
 }
 // Slow motion helper
 function slowMo(factor,dur){S.slowMo=factor;S.slowMoTime=dur;}
-function startGame(){if(S.gameStarted)return;S.gameStarted=true;iA();initFxAudios();if(typeof prewarmYoBiscuitAudio==='function')prewarmYoBiscuitAudio();startMusic();setTimeout(function(){if(typeof loadYoBiscuitWebAudioBuffer==='function')loadYoBiscuitWebAudioBuffer();},500);var ls=document.getElementById('loading-screen');ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none'},1000);showMission('FIND COOKIE!','Complete 3 missions OR reach 200+ rep to win her heart — WASD/SPACE/B/Q/E',3000);}
+function startGame(){if(S.gameStarted)return;S.gameStarted=true;iA();initFxAudios();if(typeof loadFxBuffers==='function')loadFxBuffers();if(typeof prewarmYoBiscuitAudio==='function')prewarmYoBiscuitAudio();startMusic();setTimeout(function(){if(typeof loadYoBiscuitWebAudioBuffer==='function')loadYoBiscuitWebAudioBuffer();},900);var ls=document.getElementById('loading-screen');ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none'},1000);showMission('FIND COOKIE!','Complete 3 missions OR reach 200+ rep to win her heart — WASD/SPACE/B/Q/E',3000);}
 var juicedIntroLink=document.querySelector('#loading-screen .jc');
 if(juicedIntroLink){
   juicedIntroLink.setAttribute('role','link');
