@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const sourceDir = join(root, 'files');
 const outputDir = join(root, 'dist');
+const nestedOutputDir = join(outputDir, 'files');
 
 function copyTree(fromDir, targetRoot) {
   for (const entry of readdirSync(fromDir)) {
@@ -29,4 +30,5 @@ if (existsSync(outputDir)) {
 mkdirSync(outputDir, { recursive: true });
 
 copyTree(sourceDir, outputDir);
-console.log('Built dist/ by copying files/ verbatim (no bundler rewrites).');
+copyTree(sourceDir, nestedOutputDir);
+console.log('Built dist/ by copying files/ verbatim to both dist/ and dist/files/.');
