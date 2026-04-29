@@ -304,9 +304,16 @@ function playYoBiscuitIfClose(dt){
 }
 function playFxAudio(ty){
 initFxAudios();
-var a=fxAudios[ty];
-if(!a)return false;
-try{a.currentTime=0;a.play();return true;}catch(e){return false;}
+var src=fxAudios[ty];
+if(!src||!src.src)return false;
+try{
+  var a=src.cloneNode(false);
+  a.volume=src.volume||1;
+  a.muted=false;
+  var p=a.play();
+  if(p&&p.catch)p.catch(function(){});
+  return true;
+}catch(e){return false;}
 }
 function iA(){if(!aC){try{aC=new(window.AudioContext||window.webkitAudioContext)();mG=aC.createGain();mG.gain.value=0.7;mG.connect(aC.destination);muG=aC.createGain();muG.gain.value=0.25;muG.connect(mG);sG=aC.createGain();sG.gain.value=0.6;sG.connect(mG);}catch(e){return;}}if(aC.state==='suspended'){try{aC.resume();}catch(e){}}}
 function sfx(ty){if(!aC)iA();if(ty==='bark'||ty==='cat'||ty==='fart'||ty==='poop'){if(playFxAudio(ty))return;}var o,g,t=aC.currentTime;g=aC.createGain();g.connect(sG);
@@ -341,9 +348,20 @@ function decodeMusic(){
   }).catch(function(err){
     musicDecoding=false;
     console.error('Music error:',err.message||err);
-    var btn=document.getElementById('at');if(btn)btn.textContent='RETRY';
-    setTimeout(function(){musicDecoding=false;decodeMusic();},2000);
+    if(musicWanted&&!mP)playSoundtrackHtmlFallback();
+    var btn=document.getElementById('at');if(btn)btn.textContent=mP?'MUSIC: ON':'RETRY';
+    setTimeout(function(){musicDecoding=false;if(musicWanted&&!musicBuffer)decodeMusic();},4000);
   });
+}
+function playSoundtrackHtmlFallback(){
+  if(mP||!soundtrack)return;
+  try{
+    soundtrack.currentTime=0;
+    var p=soundtrack.play();
+    if(p&&p.then){
+      p.then(function(){mP=true;var b=document.getElementById('at');if(b)b.textContent='MUSIC: ON';}).catch(function(){});
+    }else{mP=true;var b=document.getElementById('at');if(b)b.textContent='MUSIC: ON';}
+  }catch(e){}
 }
 function playMusicBuffer(){
   if(!musicBuffer||mP||!aC)return;
@@ -385,6 +403,7 @@ function stopMusic(){
     postMissionMusicEl=null;
   }
   if(mP && musicSource){try{musicSource.stop();}catch(e){}musicSource=null;}
+  if(soundtrack){try{soundtrack.pause();soundtrack.currentTime=0;}catch(e){}}
   mP=false;musicWanted=false;
   var b=document.getElementById('at');if(b)b.textContent='MUSIC: OFF';
 }
