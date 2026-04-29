@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' file: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' file: https://fonts.googleapis.com; font-src 'self' data: file: https://fonts.gstatic.com; img-src 'self' data: blob: file:; media-src 'self' data: blob: file:; connect-src 'self' data: blob: file: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob: file:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' file: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://vibej.am; style-src 'self' 'unsafe-inline' file: https://fonts.googleapis.com; font-src 'self' data: file: https://fonts.gstatic.com; img-src 'self' data: blob: file: https://vibej.am; media-src 'self' data: blob: file:; connect-src 'self' data: blob: file: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://vibej.am; worker-src 'self' blob: file:;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Hood Hound</title>
 <style>
@@ -129,17 +129,9 @@ keys.forEach(function(k){
 var yoBiscuitPlayer=null, yoBiscuitCooldown=0, yoBiscuitPathIndex=0, yoBiscuitWABuffer=null, yoBiscuitWALoading=false, yoBiscuitPrewarmTried=false;
 function yoBiscuitPathList(){
   var out=[
-    'yo_biscuit.mp3','Yo_biscuit.mp3','Y_o_biscuit.mp3','y_o_biscuit.mp3',
-    'files/yo_biscuit.mp3','files/Yo_biscuit.mp3','files/Yo_Biscuit.mp3','files/yo_biscuit_.mp3',
-    'play/yo_biscuit.mp3','play/Yo_biscuit.mp3','play/Yo_Biscuit.mp3',
-    'files/play/yo_biscuit.mp3','files/play/Yo_Biscuit.mp3',
-    'Yo+Biscuit.mp3','YoBiscuit.mp3','Yo_Biscuit.mp3','yo+biscuit.mp3',
-    'play/Yo+Biscuit.mp3','play/YoBiscuit.mp3',
-    'files/Yo+Biscuit.mp3','files/play/Yo+Biscuit.mp3',
-    'audio/yo_biscuit.mp3','audio/Yo_Biscuit.mp3',
-    'audio/Yo+Biscuit.mp3','play/Yo Biscuit.mp3','play/yo+biscuit.mp3','Yo%2BBiscuit.mp3'];
+    'yo_biscuit.mp3','files/yo_biscuit.mp3'];
   try{
-    var b=new URL('./', document.baseURI||window.location.href), pri=['yo_biscuit.mp3','Yo_biscuit.mp3','YoBiscuit.mp3','Yo_Biscuit.mp3','Yo+Biscuit.mp3','yo+biscuit.mp3'];
+    var b=new URL('./', document.baseURI||window.location.href), pri=['yo_biscuit.mp3'];
     for(var pi=0;pi<pri.length;pi++){
       try{out.unshift(new URL(encodeURI(pri[pi]),b).href);}catch(e0){}
       try{out.unshift(new URL(pri[pi],b).href);}catch(e1){}
@@ -545,30 +537,27 @@ job(function(){modelLoadsActive=Math.max(0,modelLoadsActive-1);pumpModelLoadQueu
 }
 function queueModelLoad(job){modelLoadQueue.push(job);pumpModelLoadQueue();}
 var modelPaths={
-dog:['low-poly+dog+3d+model.glb','low-poly_dog_3d_model.glb'],
-cookie:['cookie+the+dog+3D.glb','cookie_the_dog_3D.glb'],
-cats:[['gray+cat+3D.glb','gray_cat_3D.glb'],['low+poly+black cat+3d+model.glb','low_poly_black_cat_3d_model.glb'],['mixed+color+cat+3D.glb','mixed_color_cat_3D.glb']],
-parkedCars:[['Sports_Car.glb','sports+car.glb','Sports+Car.glb','sports_car.glb'],['SUV.glb','Suv.glb','suv.glb','SUV+Car.glb']],
-pizzaCorner:['Pizza_Corner.glb','pizza+corner.glb','Pizza+Corner.glb','pizza_corner.glb'],
-cookieHouse:['cookie_house_3d_model.glb','files/cookie_house_3d_model.glb','cookie+house+3d+model.glb','Cookie+House+3D+Model.glb'],
-hoodGuy:['Hood_Guy.glb','Hood+Guy.glb','hood_guy.glb'],
-bikeGuy:['Bike_Guy.glb','files/Bike_Guy.glb','Bike+Guy.glb','bike_guy.glb','bike+guy.glb'],
-bike:['orange_bike.glb','files/orange_bike.glb','Orange_Bike.glb','files/Orange_Bike.glb','Bike.glb','files/Bike.glb','bike.glb','files/bike.glb'],
-levelsioLaptop:['levesio_laptop.glb','files/levesio_laptop.glb','levelsio_laptop.glb','files/levelsio_laptop.glb','Levesio_Laptop.glb','files/Levesio_Laptop.glb'],
-jamDogs:['jamdogs_3D.glb','files/jamdogs_3D.glb','jamdogs_3d.glb','files/jamdogs_3d.glb','Jamdogs_3D.glb','files/Jamdogs_3D.glb','jamdogs.glb','files/jamdogs.glb'],
-spicyJamdogs:['spicy_jamdogs.glb','files/spicy_jamdogs.glb','Spicy_Jamdogs.glb','files/Spicy_Jamdogs.glb','spicy+jamdogs.glb','files/spicy+jamdogs.glb','spicy jamdogs.glb','files/spicy jamdogs.glb'],
-jambuns:['jambuns.glb','files/jambuns.glb','JamBuns.glb','files/JamBuns.glb','jam_buns.glb','files/jam_buns.glb','jam+buns.glb','files/jam+buns.glb'],
-hotdogCart:['hotdog_cart.glb','files/hotdog_cart.glb','Hotdog_Cart.glb','files/Hotdog_Cart.glb','hotdog+cart.glb','files/hotdog+cart.glb','hot_dog_cart.glb','files/hot_dog_cart.glb'],
-hotVendor:['hotdog_vendor.glb','files/hotdog_vendor.glb','hot_vendor.glb','files/hot_vendor.glb','Hotdog_Vendor.glb','files/Hotdog_Vendor.glb','Hot_Vendor.glb','files/Hot_Vendor.glb','hotdog+vendor.glb','files/hotdog+vendor.glb','hot+vendor.glb','files/hot+vendor.glb'],
-toxicWaste:['toxic_waste.glb','files/toxic_waste.glb','Toxic_Waste.glb','files/Toxic_Waste.glb','toxic+waste.glb','files/toxic+waste.glb','toxic waste.glb','files/toxic waste.glb'],
-hardDrive:['3d+hard+drive.glb','files/3d+hard+drive.glb','3D+hard+drive.glb','files/3D+hard+drive.glb','3D+hard+drive','files/3D+hard+drive','3D hard drive.glb','files/3D hard drive.glb','3D hard drive','files/3D hard drive','3D_hard_drive.glb','files/3D_hard_drive.glb','hard_drive.glb','files/hard_drive.glb','Hard_Drive.glb','files/Hard_Drive.glb'],
-vibejamBandana:['Vibejam_bandana.glb','files/Vibejam_bandana.glb','vibejam_bandana.glb','files/vibejam_bandana.glb','VibeJam_bandana.glb','files/VibeJam_bandana.glb','vibe_jam_bandana.glb','files/vibe_jam_bandana.glb'],
-weedPack:['loststash+3D+model.glb','loststash+3d+model.glb','Loststash+3D+Model.glb',
-  'loststash_3d_model.glb','LostStash+3D+Model.glb','loststash.glb','Loststash.glb','LostStash.glb',
-  'files/loststash+3D+model.glb','files/loststash+3d+model.glb','files/loststash_3d_model.glb',
-  'lost+stash+3d+model.glb','lost_stash_3d_model.glb','Lost_Stash_3D_Model.glb','lost-stash.glb'],
-cookieCollar:['cookie_collar.glb','files/cookie_collar.glb','Cookie+Collar.glb'],
-cookieCollarBadGuy:['thief.glb','files/thief.glb','Thief.glb','files/Thief.glb','cookie_collar_bad_guy.glb','files/cookie_collar_bad_guy.glb','wannabe_g.glb','files/wannabe_g.glb','bad_guy.glb','files/bad_guy.glb','collar_thief.glb','files/collar_thief.glb'],
+dog:['low-poly+dog+3d+model.glb','files/low-poly+dog+3d+model.glb'],
+cookie:['cookie+the+dog+3D.glb','files/cookie+the+dog+3D.glb'],
+cats:[['gray+cat+3D.glb','files/gray+cat+3D.glb'],['low+poly+black cat+3d+model.glb','files/low+poly+black cat+3d+model.glb'],['mixed+color+cat+3D.glb','files/mixed+color+cat+3D.glb']],
+parkedCars:[['Sports_Car.glb','files/Sports_Car.glb'],['SUV.glb','files/SUV.glb']],
+pizzaCorner:['Pizza_Corner.glb','files/Pizza_Corner.glb'],
+cookieHouse:['cookie_house_3d_model.glb','files/cookie_house_3d_model.glb'],
+hoodGuy:['Hood_Guy.glb','files/Hood_Guy.glb'],
+bikeGuy:['Bike_Guy.glb','files/Bike_Guy.glb'],
+bike:['orange_bike.glb','files/orange_bike.glb'],
+levelsioLaptop:['levesio_laptop.glb','files/levesio_laptop.glb'],
+jamDogs:['jamdogs_3D.glb','files/jamdogs_3D.glb'],
+spicyJamdogs:['spicy_jamdogs.glb','files/spicy_jamdogs.glb'],
+jambuns:['jambuns.glb','files/jambuns.glb'],
+hotdogCart:['hotdog_cart.glb','files/hotdog_cart.glb'],
+hotVendor:['hotdog_vendor.glb','files/hotdog_vendor.glb'],
+toxicWaste:['toxic_waste.glb','files/toxic_waste.glb'],
+hardDrive:['3d+hard+drive.glb','files/3d+hard+drive.glb'],
+vibejamBandana:['Vibejam_bandana.glb','files/Vibejam_bandana.glb'],
+weedPack:['loststash+3d+model.glb','files/loststash+3d+model.glb'],
+cookieCollar:['cookie_collar.glb','files/cookie_collar.glb'],
+cookieCollarBadGuy:['thief.glb','files/thief.glb'],
 graffitiPng:['graffiti.webp','mix_spray_jam.webp','cursor_jam.webp','spray_jam.webp',
   'cursor_2026.webp','juiced009.webp','cursor_wall_bleed.webp','levesio_graff.webp',
   'tripo_3D_graff.webp','Cursor_graff 2.webp','Cursor_graff 3.webp','glif_graff 2.webp',
@@ -2660,7 +2649,7 @@ function addPoliceCar(x,z,ry){
   var pp={x:x,z:z,hw:1.95,hd:2.5,roofY:2.2,group:pg,ia:polIa};
   policePlatforms.push(pp);
   ia.push(polIa);
-  loadModelInto(pg,['Police_Car.glb','Police+Car.glb','police_car.glb','police-car.glb'],{clearChildren:false,scale:1.75,alignBottomY:0,onLoaded:function(root){
+  loadModelInto(pg,['Police_Car.glb','files/Police_Car.glb'],{clearChildren:false,scale:1.75,alignBottomY:0,onLoaded:function(root){
     root.traverse(function(ch){if(ch.isMesh){ch.castShadow=true;ch.receiveShadow=true;}});
     console.log('Police Car loaded at',x,z);
   }});
