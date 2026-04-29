@@ -438,7 +438,7 @@ function toggleAudio(){
 // Decode short SFX after the first user gesture; keep heavy music streaming so startup stays smooth.
 // NOTE: Music auto-starts inside startGame() from user gesture (required for mobile)
 
-var S={bones:0,rep:0,heat:0,isSniffing:false,speed:0,maxSpeed:0.55,accel:0.022,keys:{},dogAngle:0,legAnim:0,bobAnim:0,interactTarget:null,gameStarted:false,cameraAngleH:0,cameraAngleV:0.4,mouseDown:false,lastMouseX:0,lastMouseY:0,missionActive:false,missionTimer:0,missionType:null,missionScore:0,velocityY:0,jumpY:0,isJumping:false,peeTimer:0,jumpHeld:false,missionsCompleted:0,missionsRequired:3,repToWinCookie:200,cookieWooed:false,cookieEnding:false,cookieEndingDone:false,cookieHouseShakeTime:0,gameWon:false,shakeAmount:0,shakeTime:0,slowMo:1,slowMoTime:0,tutorialShown:false,tutorialIdleTime:0,cookieReadyShown:false,onPlatform:null,hoodWeedPicked:false,hoodWeedHandinPending:false,copHeatReadyForReward:false,catChaseBarks:0,catCollarSpawned:false,cookieCollarHeld:false,cookieCollarBadGuyPassedOut:false,cookieCollarBadGuyPooped:false,levelsioBarks:0,levelsioDumpstersSearched:0,levelsioDriveSpawned:false,levelsioDrivePicked:false,spicyCratesCollected:0,spicyCratesReadyReturn:false,spicyStarterPicked:false,superFartReady:false,superFartUntil:0,superFartSfxAt:0,superFartSmokeAt:0,blastVX:0,blastVZ:0,turfZones:[]};
+var S={bones:0,rep:0,heat:0,isSniffing:false,speed:0,maxSpeed:0.55,accel:0.022,keys:{},dogAngle:0,legAnim:0,bobAnim:0,interactTarget:null,gameStarted:false,cameraAngleH:0,cameraAngleV:0.4,mouseDown:false,lastMouseX:0,lastMouseY:0,missionActive:false,missionTimer:0,missionType:null,missionScore:0,velocityY:0,jumpY:0,isJumping:false,peeTimer:0,jumpHeld:false,missionsCompleted:0,missionsRequired:5,repToWinCookie:200,cookieWooed:false,cookieEnding:false,cookieEndingDone:false,cookieHouseShakeTime:0,gameWon:false,shakeAmount:0,shakeTime:0,slowMo:1,slowMoTime:0,tutorialShown:false,tutorialIdleTime:0,cookieReadyShown:false,onPlatform:null,hoodWeedPicked:false,hoodWeedHandinPending:false,copHeatReadyForReward:false,catChaseBarks:0,catCollarSpawned:false,cookieCollarHeld:false,cookieCollarBadGuyPassedOut:false,cookieCollarBadGuyPooped:false,levelsioBarks:0,levelsioDumpstersSearched:0,levelsioDriveSpawned:false,levelsioDrivePicked:false,spicyCratesCollected:0,spicyCratesReadyReturn:false,spicyStarterPicked:false,superFartReady:false,superFartUntil:0,superFartSfxAt:0,superFartSmokeAt:0,blastVX:0,blastVZ:0,turfZones:[]};
 // Screen shake helper
 function shake(amount,dur){S.shakeAmount=Math.max(S.shakeAmount,amount);S.shakeTime=Math.max(S.shakeTime,dur||0.3);}
 // Particle burst system
@@ -475,7 +475,7 @@ function updateParticles(dt){
 }
 // Slow motion helper
 function slowMo(factor,dur){S.slowMo=factor;S.slowMoTime=dur;}
-function startGame(){if(S.gameStarted)return;S.gameStarted=true;iA();initFxAudios();if(typeof loadFxBuffers==='function')loadFxBuffers();if(typeof prewarmYoBiscuitAudio==='function')prewarmYoBiscuitAudio();startMusic();setTimeout(function(){if(typeof loadYoBiscuitWebAudioBuffer==='function')loadYoBiscuitWebAudioBuffer();},900);var ls=document.getElementById('loading-screen');ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none'},1000);showMission('FIND COOKIE!','Complete 3 missions OR reach 200+ rep to win her heart — WASD/SPACE/B/Q/E',3000);}
+function startGame(){if(S.gameStarted)return;S.gameStarted=true;iA();initFxAudios();if(typeof loadFxBuffers==='function')loadFxBuffers();if(typeof prewarmYoBiscuitAudio==='function')prewarmYoBiscuitAudio();startMusic();setTimeout(function(){if(typeof loadYoBiscuitWebAudioBuffer==='function')loadYoBiscuitWebAudioBuffer();},900);var ls=document.getElementById('loading-screen');ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none'},1000);showMission('FIND COOKIE!','Complete 5 missions to win her heart — WASD/SPACE/B/Q/E',3000);}
 var juicedIntroLink=document.querySelector('#loading-screen .jc');
 if(juicedIntroLink){
   juicedIntroLink.setAttribute('role','link');
@@ -561,7 +561,7 @@ jambuns:['jambuns.glb','files/jambuns.glb','JamBuns.glb','files/JamBuns.glb','ja
 hotdogCart:['hotdog_cart.glb','files/hotdog_cart.glb','Hotdog_Cart.glb','files/Hotdog_Cart.glb','hotdog+cart.glb','files/hotdog+cart.glb','hot_dog_cart.glb','files/hot_dog_cart.glb'],
 hotVendor:['hotdog_vendor.glb','files/hotdog_vendor.glb','hot_vendor.glb','files/hot_vendor.glb','Hotdog_Vendor.glb','files/Hotdog_Vendor.glb','Hot_Vendor.glb','files/Hot_Vendor.glb','hotdog+vendor.glb','files/hotdog+vendor.glb','hot+vendor.glb','files/hot+vendor.glb'],
 toxicWaste:['toxic_waste.glb','files/toxic_waste.glb','Toxic_Waste.glb','files/Toxic_Waste.glb','toxic+waste.glb','files/toxic+waste.glb','toxic waste.glb','files/toxic waste.glb'],
-hardDrive:['3D+hard+drive.glb','files/3D+hard+drive.glb','3D+hard+drive','files/3D+hard+drive','3D hard drive.glb','files/3D hard drive.glb','3D hard drive','files/3D hard drive','3D_hard_drive.glb','files/3D_hard_drive.glb','hard_drive.glb','files/hard_drive.glb','Hard_Drive.glb','files/Hard_Drive.glb'],
+hardDrive:['3d+hard+drive.glb','files/3d+hard+drive.glb','3D+hard+drive.glb','files/3D+hard+drive.glb','3D+hard+drive','files/3D+hard+drive','3D hard drive.glb','files/3D hard drive.glb','3D hard drive','files/3D hard drive','3D_hard_drive.glb','files/3D_hard_drive.glb','hard_drive.glb','files/hard_drive.glb','Hard_Drive.glb','files/Hard_Drive.glb'],
 vibejamBandana:['Vibejam_bandana.glb','files/Vibejam_bandana.glb','vibejam_bandana.glb','files/vibejam_bandana.glb','VibeJam_bandana.glb','files/VibeJam_bandana.glb','vibe_jam_bandana.glb','files/vibe_jam_bandana.glb'],
 weedPack:['loststash+3D+model.glb','loststash+3d+model.glb','Loststash+3D+Model.glb',
   'loststash_3d_model.glb','LostStash+3D+Model.glb','loststash.glb','Loststash.glb','LostStash.glb',
@@ -1302,7 +1302,7 @@ function placeAllBoxyBuildings(){
     var t=BLDG_SLOTS[j];mkKB(t[0],t[1],t[2],t[3],t[4],t[5]||0);
   }
 }
-function cookieWinsReady(){return S.missionsCompleted>=S.missionsRequired || S.rep>=S.repToWinCookie;}
+function cookieWinsReady(){return S.missionsCompleted>=S.missionsRequired;}
 function showCookieWinOverlay(){
 var wo=document.createElement('div');
 wo.style.cssText='position:fixed;inset:0;z-index:500;background:radial-gradient(circle,rgba(255,68,170,0.4),rgba(0,0,0,0.85));display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;animation:fu 1s ease forwards;pointer-events:none';
@@ -2300,11 +2300,11 @@ spicyStarterGroup=g;
 burst(g.position.x,0.9,g.position.z,[0xff5533,0xffcc22,0xffffff],18,1.0,4);
 }
 function startSpicyJamdogTimedRun(){
-S.spicyStarterPicked=true;S.superFartReady=true;S.superFartUntil=clock.getElapsedTime()+180;S.missionTimer=100;S.missionScore=0;
+S.spicyStarterPicked=true;S.superFartReady=true;S.superFartUntil=clock.getElapsedTime()+90;S.missionTimer=60;S.missionScore=0;
 var mtr=document.getElementById('mtr');if(mtr)mtr.style.display='';
-var tv=document.getElementById('tv');if(tv)tv.textContent='100';
+var tv=document.getElementById('tv');if(tv)tv.textContent='60';
 spawnSpicyBunCrates();
-showMission('SUPER FART READY!','Spicy Jamdogs eaten. Collect 5 bun packages and return them to Hot Vendor within 100 seconds.',4500);
+showMission('SUPER FART READY!','Spicy Jamdogs eaten. Hold G to use Super Fart, smash through breakable stuff, collect 5 bun packages, then return to Hot Vendor within 60 seconds.',5200);
 sfx('mission');
 }
 function spawnSpicyBunCrates(){
@@ -2369,6 +2369,15 @@ S.superFartSmokeAt=t+0.045;
 var bx=dog.position.x-Math.sin(S.dogAngle)*0.78,bz=dog.position.z-Math.cos(S.dogAngle)*0.78;
 burst(bx,0.45+S.jumpY,bz,[0x88ff66,0xb9ff88,0xddffbb],5,0.65,1.8);
 }
+function offsetPickupAwayFromDog(x,z,minDist,extra){
+minDist=minDist||3.0;extra=extra||1.1;
+var dx=x-dog.position.x,dz=z-dog.position.z,d=Math.hypot(dx,dz);
+if(d>=minDist)return{x:x,z:z};
+if(d<0.1){dx=Math.sin(S.dogAngle);dz=Math.cos(S.dogAngle);d=1;}
+dx/=d;dz/=d;
+var push=minDist-d+extra;
+return{x:x+dx*push,z:z+dz*push};
+}
 function spawnJamDogsReward(missionId){
 if(missionId!=='hood_weed'&&missionId!=='cop_heat'&&missionId!=='levelsio_job'&&missionId!=='spicy_jamdog')return;
 if(jamDogsRewardGroup){scene.remove(jamDogsRewardGroup);jamDogsRewardGroup=null;}
@@ -2384,7 +2393,8 @@ var ax=dog.position.x-sx,az=dog.position.z-sz,ad=Math.hypot(ax,az);
 if(ad<0.1){ax=Math.sin(S.dogAngle);az=Math.cos(S.dogAngle);ad=1;}
 ax/=ad;az/=ad;
 var sideX=-az,sideZ=ax;
-g.position.set(sx+sideX*2.2+ax*0.45,0.05,sz+sideZ*2.2+az*0.45);
+var rp=offsetPickupAwayFromDog(sx+sideX*2.2+ax*0.45,sz+sideZ*2.2+az*0.45,3.1,0.9);
+g.position.set(rp.x,0.05,rp.z);
 g.rotation.y=Math.atan2(sideX,sideZ)+Math.PI;
 g.userData.baseY=0.05;
 g.userData.spawnT=clock.getElapsedTime();
@@ -2412,7 +2422,8 @@ var g=new THREE.Group();
 g.userData.picked=false;
 g.userData.spawnT=clock.getElapsedTime();
 g.userData.baseY=0.08;
-g.position.set(d.x+1.75,0.08,d.z+0.85);
+var bp=offsetPickupAwayFromDog(d.x+1.75,d.z+0.85,3.0,0.9);
+g.position.set(bp.x,0.08,bp.z);
 var halo=new THREE.Mesh(new THREE.TorusGeometry(0.75,0.04,8,36),new THREE.MeshStandardMaterial({color:0xff66ff,emissive:0xff22aa,emissiveIntensity:0.85,transparent:true,opacity:0.55,depthWrite:false}));
 halo.rotation.x=Math.PI/2;halo.position.y=0.04;g.add(halo);g.userData.halo=halo;
 loadModelInto(g,modelPaths.vibejamBandana,{clearChildren:false,scale:1.2,rotationY:0,alignBottomY:0.08,onLoaded:function(root){setShadows(root);},onError:function(){addVibejamBandanaFallback(g);}});
@@ -2525,7 +2536,7 @@ function pickRandomHoodWeedStashPosition(){
 }
 
 // Place
-[[-72,7],[-48,-7],[-16,7],[18,-7],[52,7],[76,-7],[-47,-36],[47,35]].forEach(function(p){mkH(p[0],p[1]);});
+[[-72,7],[-48,-7],[-16,7],[18,-7],[52,7],[76,-7]].forEach(function(p){mkH(p[0],p[1]);});
 [[12,-7.5],[-35,7.5],[42,-7.5],[68,14],[-15,-37],[25,7.5],[-48,-7.5],[75,7.5],[-65,-55],[-30,-42],[55,-7.5],[-62,-65]].forEach(function(p){mkT(p[0],p[1]);});
 for(var i=-85;i<=85;i+=22){if(!isBlockedDecorationSpot(i,9))mkL(i,9);if(!isBlockedDecorationSpot(i,-9))mkL(i,-9);}
 [[-55,38,1.2],[-48,42,0.8],[65.5,28,0.9],[-13,-57,1],[-65,-48,0.7]].forEach(function(p){if(spotOverlapsBoxBuilding(p[0],p[1],2.8))return;mkTr(p[0],p[1],p[2]);});
@@ -2536,11 +2547,6 @@ mkD(-10,-42);mkD(20,-42);mkD(-60,-62);mkD(60,-15);mkD(-72,22);mkD(72,-32);mkD(28
   var alcx=-60, alcz=-50, alW=12, alD=17;
   var alPad=new THREE.Mesh(new THREE.PlaneGeometry(alW,alD),M.road);
   alPad.rotation.x=-Math.PI/2;alPad.position.set(alcx,0.03,alcz);alPad.receiveShadow=true;scene.add(alPad);
-  var wMat=new THREE.MeshStandardMaterial({color:0x3c3c44,roughness:0.9,flatShading:true,metalness:0.1});
-  var endBar=new THREE.Mesh(new THREE.BoxGeometry(alW+0.5,0.5,0.4),wMat);
-  var barZ=CAT_ALLEY.minZ+0.2;
-  endBar.position.set(alcx,0.25,barZ);endBar.castShadow=true;scene.add(endBar);
-  addC(alcx,barZ,6.3,0.24);
 })();
 if(!spotOverlapsBoxBuilding(-55.9,-47.2,0.6)) mkD(-55.9,-47.2);
 if(!spotOverlapsBoxBuilding(-55.9,-51.0,0.6)) mkD(-55.9,-51.0);
@@ -3069,7 +3075,7 @@ var sM=new THREE.ShaderMaterial({uniforms:{topColor:{value:new THREE.Color(0xff6
 scene.add(new THREE.Mesh(new THREE.SphereGeometry(180,32,16),sM));
 
 // Missions
-var MS=[{id:'levelsio_job',name:'LEVELSIO JOB',desc:'Kleptomaniac cats stole Levelsio\'s hard drive with all the new AI ideas. Bark twice at the cat alley cats, search every cat-alley dumpster until the drive pops out, then bring it back to Levelsio. Reward: 2 packs of Jamdogs — one for Biscuit and one for Cookie.',time:90,target:1,rb:0,rr:30},{id:'spicy_jamdog',name:'SPICY JAMDOGS',desc:'Hot Vendor drops a pack of spicy Jamdogs first. Eat them to activate Super Fart for 3 minutes, then collect 5 lost bun-package crates from the roads and gray paths and return them to the vendor within 100 seconds.',time:null,target:5,rb:4,rr:45},{id:'cat_chase',name:'COOKIE\'S COLLAR',desc:'Word on the street is some wannabe G stole Cookie\'s diamond collar. Find him somewhere on the map, get close, fart to make him pass out, grab the collar, then bring it back to Cookie.',time:null,target:1,rb:8,rr:12},{id:'territory',name:'TURF WAR',desc:'Bonus mission: pee on every hydrant to claim cat-free turf zones for 3 minutes. Claim them all for +50 Rep.',time:null,target:8,rb:0,rr:50,bonus:true},{id:'dumpster_dive',name:'DUMPSTER DIVING',desc:'Bonus mission: search 5 dumpsters. On the fifth one, a Vibejam bandana pops out as a pickup reward.',time:null,target:5,rb:15,rr:10,bonus:true},{id:'cop_heat',name:'COP DROP',desc:'Biscuit needs to shit on the roof of 3/3 police cars, then return to Bike Guy for a pack of hotdog weeners. No time limit.',time:null,target:3,rb:3,rr:100},{id:'hood_weed',name:'LOST STASH',desc:'Find the stash (green W on the minimap) and return it. Press Q to sniff for a green trail. Stash is never right next to the Hood Guy.',time:120,target:1,rb:1,rr:20}];
+var MS=[{id:'levelsio_job',name:'LEVELSIO JOB',desc:'Kleptomaniac cats stole Levelsio\'s hard drive with all the new AI ideas. Bark twice at the cat alley cats, search every cat-alley dumpster until the drive pops out, then bring it back to Levelsio. Reward: 2 packs of Jamdogs — one for Biscuit and one for Cookie.',time:90,target:1,rb:0,rr:30},{id:'spicy_jamdog',name:'SPICY JAMDOGS',desc:'Hot Vendor drops a pack of spicy Jamdogs first. Eat them to activate Super Fart for 90 seconds, then collect 5 lost bun-package crates from the roads and gray paths and return them to the vendor within 60 seconds.',time:null,target:5,rb:4,rr:45},{id:'cat_chase',name:'COOKIE\'S COLLAR',desc:'Word on the street is some wannabe G stole Cookie\'s diamond collar. Find him somewhere on the map, get close, fart to make him pass out, grab the collar, then bring it back to Cookie.',time:null,target:1,rb:8,rr:12},{id:'territory',name:'TURF WAR',desc:'Bonus mission: pee on every hydrant to claim cat-free turf zones for 3 minutes. Claim them all for +50 Rep.',time:null,target:8,rb:0,rr:50,bonus:true},{id:'dumpster_dive',name:'DUMPSTER DIVING',desc:'Bonus mission: search 5 dumpsters. On the fifth one, a Vibejam bandana pops out as a pickup reward.',time:null,target:5,rb:15,rr:10,bonus:true},{id:'cop_heat',name:'COP DROP',desc:'Biscuit needs to shit on the roof of 3/3 police cars, then return to Bike Guy for a pack of hotdog weeners. No time limit.',time:null,target:3,rb:3,rr:100},{id:'hood_weed',name:'LOST STASH',desc:'Find the stash (green W on the minimap) and return it. Press Q to sniff for a green trail. Stash is never right next to the Hood Guy.',time:120,target:1,rb:1,rr:20}];
 function stM(id){if(S.missionActive)return;var m=null;for(var i=0;i<MS.length;i++)if(MS[i].id===id){m=MS[i];break;}if(!m)return;
 if(id==='cop_heat'){S.copHeatReadyForReward=false;for(var cpi=0;cpi<ia.length;cpi++){if(ia[cpi].type==='police_car')ia[cpi].poopedOn=false;}}
 if(id==='hood_weed'){S.hoodWeedPicked=false;S.hoodWeedHandinPending=false;yoBiscuitCooldown=0;if(hoodWeedMesh){hoodWeedMesh.userData.collected=false;syncHoodWeedStashPosition(hoodWeedMesh);hoodWeedMesh.visible=true;for(var hwi=0;hwi<hoodWeedMesh.children.length;hwi++)hoodWeedMesh.children[hwi].visible=true;}}
@@ -3225,7 +3231,8 @@ function spawnCatChaseCollar(x,z){
   if(S.catCollarSpawned||cookieCollarGroup||!S.missionActive||S.missionType!=='cat_chase')return;
   S.catCollarSpawned=true;
   cookieCollarGroup=new THREE.Group();
-  cookieCollarGroup.position.set(x!==undefined?x:-59.1,0.04,z!==undefined?z:-50.2);
+  var cp=offsetPickupAwayFromDog(x!==undefined?x:-59.1,z!==undefined?z:-50.2,3.0,0.9);
+  cookieCollarGroup.position.set(cp.x,0.04,cp.z);
   cookieCollarGroup.userData.picked=false;
   cookieCollarGroup.userData.spawnT=clock.getElapsedTime();
   cookieCollarGroup.scale.setScalar(0.15);
@@ -3277,8 +3284,11 @@ function spawnLevelsioHardDrive(x,z){
   if(levelsioDriveGroup||!S.missionActive||S.missionType!=='levelsio_job')return;
   var g=new THREE.Group();
   g.userData.baseGroundY=0.08;
+  g.userData.spawnT=clock.getElapsedTime();
+  g.userData.popFromY=1.65;
   g.userData.picked=false;
-  g.position.set(x,0.08,z);
+  var hp=offsetPickupAwayFromDog(x,z,3.0,0.8);
+  g.position.set(hp.x,g.userData.popFromY,hp.z);
   loadModelInto(g,modelPaths.hardDrive,{clearChildren:false,scale:1.15,rotationY:0,alignBottomY:0.08,onLoaded:function(root){
     setShadows(root);
   },onError:function(){
@@ -3293,7 +3303,7 @@ function spawnLevelsioHardDrive(x,z){
 function maybeSpawnLevelsioDriveFromDumpster(d){
   if(!S.missionActive||S.missionType!=='levelsio_job'||S.levelsioDriveSpawned)return;
   var need=getLevelsioDumpsterTargetCount();
-  if(S.levelsioDumpstersSearched>=need)spawnLevelsioHardDrive(d.x-2.35,d.z);
+  if(S.levelsioDumpstersSearched>=need)spawnLevelsioHardDrive(d.x,d.z);
 }
 function clearLevelsioAlleyCats(){
   for(var i=0;i<cats.length;i++){
@@ -3536,14 +3546,14 @@ function adjH(a){S.heat=Math.max(0,Math.min(5,S.heat+a));document.querySelectorA
 function addB(n){S.bones+=n;document.getElementById('bc').textContent=S.bones;sfx('bone');}
 function repCookieUnlockCheck(){
   if(S.cookieWooed||S.cookieReadyShown)return;
-  if(S.rep>=S.repToWinCookie && S.missionsCompleted<S.missionsRequired){
+  if(S.missionsCompleted>=S.missionsRequired){
     S.cookieReadyShown=true;
     for(var hi=0;hi<cookieHearts.length;hi++)cookieHearts[hi].material.opacity=1;
     setTimeout(showCookieReadyOverlay,400);
   }
 }
 function addR(n){var was=S.rep;S.rep+=n;document.getElementById('rc').textContent=S.rep;
-  if(!S.cookieWooed && was<S.repToWinCookie && S.rep>=S.repToWinCookie)repCookieUnlockCheck();
+repCookieUnlockCheck();
 }
 function dismissMissionPopup(){
   var p=document.getElementById('mp'),dim=document.getElementById('mp-dim');
@@ -4023,7 +4033,8 @@ if(levelsioDriveGroup&&S.missionActive&&S.missionType==='levelsio_job'&&!S.level
   if(hdx*hdx+hdz*hdz<2.25){levelsioDriveGroup.userData.picked=true;levelsioDriveGroup.visible=false;S.levelsioDrivePicked=true;showMission('HARD DRIVE SECURED!','Bring it back to Levelsio to get 2 packs of Jamdogs: one for Biscuit and one for Cookie.',4000);sfx('bone');}
 }
 if(levelsioDriveGroup&&levelsioDriveGroup.visible&&!levelsioDriveGroup.userData.picked){
-  levelsioDriveGroup.position.y=(levelsioDriveGroup.userData.baseGroundY||0.08)+Math.sin(t*2.8)*0.08;
+  var hBase=levelsioDriveGroup.userData.baseGroundY||0.08,hAge=t-(levelsioDriveGroup.userData.spawnT||t),hPop=Math.min(1,Math.max(0,hAge/0.55));
+  levelsioDriveGroup.position.y=hBase+(levelsioDriveGroup.userData.popFromY?((levelsioDriveGroup.userData.popFromY-hBase)*(1-hPop)*(1-hPop)):0)+Math.sin(t*2.8)*0.08;
   levelsioDriveGroup.rotation.x=Math.sin(t*1.4)*0.2;
   levelsioDriveGroup.rotation.y+=dt*1.5;
   levelsioDriveGroup.rotation.z=Math.cos(t*1.1)*0.1;
