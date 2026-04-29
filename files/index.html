@@ -2047,12 +2047,26 @@ function addHoodWeed(x,z){
     addHoodWeedPlaceholderToGroup(g);
   }});
 }
+function addHoodGuyFallbackToGroup(g){
+  var skin=new THREE.MeshStandardMaterial({color:0x6b4a35,roughness:0.8,flatShading:true});
+  var shirt=new THREE.MeshStandardMaterial({color:0x20262b,emissive:0x081015,emissiveIntensity:0.15,roughness:0.72,flatShading:true});
+  var pants=new THREE.MeshStandardMaterial({color:0x222222,roughness:0.8,flatShading:true});
+  var cap=new THREE.MeshStandardMaterial({color:0x111111,emissive:0x050505,emissiveIntensity:0.2,roughness:0.7,flatShading:true});
+  var body=new THREE.Mesh(new THREE.BoxGeometry(0.72,1.1,0.42),shirt);body.position.set(0,1.15,0);body.castShadow=true;g.add(body);
+  var head=new THREE.Mesh(new THREE.SphereGeometry(0.28,10,8),skin);head.position.set(0,1.9,0.02);head.castShadow=true;g.add(head);
+  var hat=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.34,0.16,10),cap);hat.position.set(0,2.15,0.02);hat.castShadow=true;g.add(hat);
+  var brim=new THREE.Mesh(new THREE.BoxGeometry(0.45,0.04,0.18),cap);brim.position.set(0,2.1,0.24);brim.castShadow=true;g.add(brim);
+  var legG=new THREE.BoxGeometry(0.22,0.85,0.22);
+  var l1=new THREE.Mesh(legG,pants);l1.position.set(-0.18,0.42,0);l1.castShadow=true;g.add(l1);
+  var l2=new THREE.Mesh(legG,pants);l2.position.set(0.18,0.42,0);l2.castShadow=true;g.add(l2);
+}
 function addHoodGuy(x,z){
   var g=new THREE.Group();
   g.userData.isHoodGuy=true;
   g.userData.facingAdd=0;
   g.position.set(x,0,z);
   hoodGuy=g;
+  addHoodGuyFallbackToGroup(g);
   loadModelInto(g, modelPaths.hoodGuy, {clearChildren:true, scale:2.75, rotationY:0, alignBottomY:0, onLoaded: function(root, gltf) {
     var fillL=new THREE.PointLight(0xfff0e0,0.75,18,1.6);
     fillL.position.set(0.2,2.5,0.5);
@@ -2082,7 +2096,7 @@ function addHoodGuy(x,z){
     var hgLabel=makeMissionLabelSprite('HOOD GUY',hbC);hgLabel.position.set(0,4.5,0);g.add(hgLabel);g.userData.hgMissionLabel=hgLabel;
     var hgHalo=new THREE.Mesh(new THREE.TorusGeometry(1.25,0.045,8,48),new THREE.MeshStandardMaterial({color:hbC,emissive:hbC,emissiveIntensity:0.75,transparent:true,opacity:0.5,depthWrite:false}));
     hgHalo.rotation.x=Math.PI/2;hgHalo.position.set(0,0.08,0);g.add(hgHalo);g.userData.hgMissionHalo=hgHalo;
-  }});
+  },onError:function(){if(!g.children.length)addHoodGuyFallbackToGroup(g);}});
   scene.add(g);
   npcs.push(g);
   var hgIa = { type:'hood_guy', x:x, z:z, radius:3.2, group:g, missionOnly:false };
