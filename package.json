@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite files --host 0.0.0.0",
-    "build": "vite build files --outDir ../dist --emptyOutDir && node scripts/copy-assets.mjs",
+    "build": "node scripts/copy-assets.mjs",
     "preview": "vite preview dist --host 0.0.0.0"
   },
   "devDependencies": {
