@@ -91,9 +91,11 @@ body.mp-open #tut{opacity:1;transition:opacity .35s ease}
 <div id="mm"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="vibejam-portal.js?v=vj20260430local"></script>
 <script>
 
 console.log("%c[HoodHound build] spicy-jamdog-crate-run-v81 (Super Fart bun crate delivery mission) loaded","background:#22aa55;color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold");
+var selfUsername='',playerColorForPortal='orange',currentSpeed=0;
 try{
 var aC=null,mP=false,mG=null,muG=null,sG=null;
 var fxAudios={},fxBuffers={},fxBufferLoading=false;
@@ -501,7 +503,12 @@ function toggleAudio(){
 // Decode short SFX after the first user gesture; keep heavy music streaming so startup stays smooth.
 // NOTE: Music auto-starts inside startGame() from user gesture (required for mobile)
 
-var S={bones:0,rep:0,heat:0,isSniffing:false,speed:0,maxSpeed:0.55,accel:0.022,keys:{},dogAngle:0,legAnim:0,bobAnim:0,interactTarget:null,gameStarted:false,cameraAngleH:0,cameraAngleV:0.4,mouseDown:false,lastMouseX:0,lastMouseY:0,missionActive:false,missionTimer:0,missionType:null,missionScore:0,velocityY:0,jumpY:0,isJumping:false,peeTimer:0,jumpHeld:false,missionsCompleted:0,missionsRequired:5,repToWinCookie:200,cookieWooed:false,cookieEnding:false,cookieEndingDone:false,cookieHouseShakeTime:0,gameWon:false,shakeAmount:0,shakeTime:0,slowMo:1,slowMoTime:0,tutorialShown:false,tutorialIdleTime:0,cookieReadyShown:false,onPlatform:null,hoodWeedPicked:false,hoodWeedHandinPending:false,copHeatReadyForReward:false,catChaseBarks:0,catCollarSpawned:false,cookieCollarHeld:false,cookieCollarBadGuyPassedOut:false,cookieCollarBadGuyPooped:false,levelsioBarks:0,levelsioDumpstersSearched:0,levelsioDriveSpawned:false,levelsioDrivePicked:false,spicyCratesCollected:0,spicyCratesReadyReturn:false,spicyStarterPicked:false,superFartReady:false,superFartUntil:0,superFartSfxAt:0,superFartSmokeAt:0,blastVX:0,blastVZ:0,turfZones:[]};
+var S={bones:0,rep:0,heat:0,isSniffing:false,speed:0,maxSpeed:0.55,accel:0.022,keys:{},dogAngle:0,legAnim:0,bobAnim:0,interactTarget:null,gameStarted:false,cameraAngleH:0,cameraAngleV:0.4,mouseDown:false,lastMouseX:0,lastMouseY:0,missionActive:false,missionTimer:0,missionType:null,missionScore:0,velocityY:0,jumpY:0,isJumping:false,peeTimer:0,jumpHeld:false,missionsCompleted:0,missionsRequired:5,repToWinCookie:200,cookieWooed:false,cookieEnding:false,cookieEndingDone:false,cookieHouseShakeTime:0,gameWon:false,shakeAmount:0,shakeTime:0,slowMo:1,slowMoTime:0,tutorialShown:false,tutorialIdleTime:0,cookieReadyShown:false,arrivedViaVibeJamPortal:(function(){var _q=new URLSearchParams(window.location.search||'');return _q.get('portal')==='true'||_q.get('portal')==='1';})(),onPlatform:null,hoodWeedPicked:false,hoodWeedHandinPending:false,copHeatReadyForReward:false,catChaseBarks:0,catCollarSpawned:false,cookieCollarHeld:false,cookieCollarBadGuyPassedOut:false,cookieCollarBadGuyPooped:false,levelsioBarks:0,levelsioDumpstersSearched:0,levelsioDriveSpawned:false,levelsioDrivePicked:false,spicyCratesCollected:0,spicyCratesReadyReturn:false,spicyStarterPicked:false,superFartReady:false,superFartUntil:0,superFartSfxAt:0,superFartSmokeAt:0,blastVX:0,blastVZ:0,turfZones:[]};
+(function(){
+var pq=new URLSearchParams(window.location.search||'');
+var pu=pq.get('username');if(pu)selfUsername=pu;
+var pc=pq.get('color');if(pc)playerColorForPortal=pc;
+})();
 // Screen shake helper
 function shake(amount,dur){S.shakeAmount=Math.max(S.shakeAmount,amount);S.shakeTime=Math.max(S.shakeTime,dur||0.3);}
 // Particle burst system
@@ -538,7 +545,7 @@ function updateParticles(dt){
 }
 // Slow motion helper
 function slowMo(factor,dur){S.slowMo=factor;S.slowMoTime=dur;}
-function startGame(){if(S.gameStarted)return;S.gameStarted=true;iA();initFxAudios();if(typeof loadFxBuffers==='function')loadFxBuffers();if(typeof prewarmYoBiscuitAudio==='function')prewarmYoBiscuitAudio();startMusic();setTimeout(function(){if(typeof loadYoBiscuitWebAudioBuffer==='function')loadYoBiscuitWebAudioBuffer();},900);var ls=document.getElementById('loading-screen');ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none'},1000);showMission('FIND COOKIE!','Complete 5 missions to win her heart — WASD/SPACE/B/Q/E',3000);}
+function startGame(){if(S.gameStarted)return;S.gameStarted=true;iA();initFxAudios();if(typeof loadFxBuffers==='function')loadFxBuffers();if(typeof prewarmYoBiscuitAudio==='function')prewarmYoBiscuitAudio();startMusic();setTimeout(function(){if(typeof loadYoBiscuitWebAudioBuffer==='function')loadYoBiscuitWebAudioBuffer();},900);var ls=document.getElementById('loading-screen');var portalFast=!!S.arrivedViaVibeJamPortal;if(portalFast){ls.style.transition='none';ls.classList.add('fade-out');ls.style.opacity='0';ls.style.pointerEvents='none';ls.style.display='none';}else{ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none'},1000);}if(!portalFast)showMission('FIND COOKIE!','Complete 5 missions to win her heart — WASD/SPACE/B/Q/E',3000);}
 var juicedIntroLink=document.querySelector('#loading-screen .jc');
 if(juicedIntroLink){
   juicedIntroLink.setAttribute('role','link');
@@ -3538,7 +3545,7 @@ burst(bx,0.2,bz,[0x5a3518,0x6b3f1d,0x7a4a22],10,0.8,1.6);
 }
 function setSniffing(on){S.isSniffing=!!on;var so=document.getElementById('so');if(so)so.classList.toggle('active',S.isSniffing);}
 function togS(){setSniffing(!S.isSniffing);}
-function doI(){var t=S.interactTarget;if(!t)return;
+function doI(){if(typeof vibeJamPortalTryInteract==='function'&&vibeJamPortalTryInteract())return;var t=S.interactTarget;if(!t)return;
 if(t.type==='trashcan'&&!t.knocked){spillTrashCan(t,false);}
 else if(t.type==='hydrant'&&!t.marked){
 t.marked=true;
@@ -3971,7 +3978,7 @@ function drawMM(){
 
 // MAIN LOOP
 var clock=new THREE.Clock();
-function animate(){requestAnimationFrame(animate);if(!S.gameStarted){renderer.render(scene,camera);return;}
+function animate(){requestAnimationFrame(animate);if(typeof animateVibeJamPortals==='function')animateVibeJamPortals();if(!S.gameStarted){renderer.render(scene,camera);return;}
 var dt=Math.min(clock.getDelta(),0.05),t=clock.getElapsedTime();
 // Slow-motion ramp & decay
 if(S.slowMoTime>0){S.slowMoTime-=dt;if(S.slowMoTime<=0){S.slowMo=1;S.slowMoTime=0;}}
@@ -3984,6 +3991,7 @@ if(S.shakeTime>0){S.shakeTime-=dt/Math.max(0.25,S.slowMo);if(S.shakeTime<=0){S.s
 var mx=0,mz=0;if(S.keys['w']||S.keys['arrowup'])mz=1;if(S.keys['s']||S.keys['arrowdown'])mz=-1;if(S.keys['a']||S.keys['arrowleft'])mx=1;if(S.keys['d']||S.keys['arrowright'])mx=-1;if(jA){mx=-jV.x;mz=-jV.y;}if(S.cookieEnding){mx=0;mz=0;}
 var im=Math.sqrt(mx*mx+mz*mz);
 if(im>0.1){var ta=Math.atan2(mx,mz)+S.cameraAngleH,ad=ta-S.dogAngle;while(ad>Math.PI)ad-=Math.PI*2;while(ad<-Math.PI)ad+=Math.PI*2;S.dogAngle+=ad*0.15;S.speed=Math.min(S.speed+S.accel,S.maxSpeed*Math.min(im,1));if(S.keys['shift'])S.speed=Math.min(S.speed*1.5,S.maxSpeed*1.8);}else{S.speed=0;}
+currentSpeed=Math.round(S.speed*520)/100;
 var superFarting=!!(S.superFartReady&&(!S.superFartUntil||t<S.superFartUntil)&&S.keys['g']&&!S.cookieEnding);
 if(superFarting){
   S.speed=Math.max(S.speed,S.maxSpeed*3);
@@ -4115,7 +4123,7 @@ if(S.shakeAmount>0){
   camera.position.z+=(Math.random()-0.5)*sa;
 }
 // First-mission tutorial
-if(S.missionsCompleted===0&&!S.tutorialShown){
+if(S.missionsCompleted===0&&!S.tutorialShown&&!S.arrivedViaVibeJamPortal){
   S.tutorialIdleTime+=dt;
   if(S.tutorialIdleTime>8){
     S.tutorialShown=true;
@@ -4313,7 +4321,7 @@ else{c.userData.catWalkAction.paused=true;}
 c.userData.catMixer.update(dt);
 }
 var ci=null;for(var j=0;j<ia.length;j++){if(ia[j].group===c){ci=ia[j];break;}}if(ci){ci.x=c.position.x;ci.z=c.position.z;}if(c.userData.catTail)c.userData.catTail.rotation.z=Math.sin(t*4)*0.5;if(c.userData.catModel&&!c.userData.catMixer)c.userData.catModel.rotation.y=Math.sin(t*2+c.position.x)*0.08;}
-var closest=null,clD=Infinity;for(var i=0;i<ia.length;i++){var it=ia[i],d=Math.sqrt(Math.pow(it.x-dog.position.x,2)+Math.pow(it.z-dog.position.z,2));if(d<it.radius&&d<clD){clD=d;closest=it;}}S.interactTarget=closest;var canInteract=!!(closest&&!closest.knocked&&!closest.searched&&!closest.marked&&!closest.wooed&&(closest.type!=='police_car'||!closest.poopedOn));document.getElementById('ip').classList.toggle('show',canInteract);var mshE=document.getElementById('msh');if(mshE){if(canInteract&&closest.type==='mission_board'){mshE.classList.add('show');mshE.setAttribute('aria-hidden','false');mshE.querySelector('.msh-t').textContent=closest.name||'Mission';if(closest.missionId==='levelsio_job'&&S.missionActive&&S.missionType==='levelsio_job'&&S.levelsioDrivePicked)mshE.querySelector('.msh-b').textContent='Press E to return the hard drive';else if(closest.missionId==='levelsio_job'&&S.missionActive&&S.missionType==='levelsio_job')mshE.querySelector('.msh-b').textContent='Bring back the hard drive';else mshE.querySelector('.msh-b').textContent='Press E to start';}else if(canInteract&&closest.type==='hood_guy'){mshE.classList.add('show');mshE.setAttribute('aria-hidden','false');mshE.querySelector('.msh-t').textContent='Hood Guy';if(S.missionType==='hood_weed'&&S.hoodWeedPicked)mshE.querySelector('.msh-b').textContent='Press E to trade for a hot dog';else if(S.missionType==='hood_weed')mshE.querySelector('.msh-b').textContent='Press E — he needs that bag back';else mshE.querySelector('.msh-b').textContent='Press E to help him out';}
+var closest=null,clD=Infinity;for(var i=0;i<ia.length;i++){var it=ia[i],d=Math.sqrt(Math.pow(it.x-dog.position.x,2)+Math.pow(it.z-dog.position.z,2));if(d<it.radius&&d<clD){clD=d;closest=it;}}S.interactTarget=closest;var canIa=!!(closest&&!closest.knocked&&!closest.searched&&!closest.marked&&!closest.wooed&&(closest.type!=='police_car'||!closest.poopedOn));var canVj=!!(window._vjPortalNearExit||window._vjPortalNearReturn);var canInteract=canIa||canVj;document.getElementById('ip').classList.toggle('show',canInteract);var mshE=document.getElementById('msh');if(mshE){if(canIa&&closest&&closest.type==='mission_board'){mshE.classList.add('show');mshE.setAttribute('aria-hidden','false');mshE.querySelector('.msh-t').textContent=closest.name||'Mission';if(closest.missionId==='levelsio_job'&&S.missionActive&&S.missionType==='levelsio_job'&&S.levelsioDrivePicked)mshE.querySelector('.msh-b').textContent='Press E to return the hard drive';else if(closest.missionId==='levelsio_job'&&S.missionActive&&S.missionType==='levelsio_job')mshE.querySelector('.msh-b').textContent='Bring back the hard drive';else mshE.querySelector('.msh-b').textContent='Press E to start';}else if(canIa&&closest&&closest.type==='hood_guy'){mshE.classList.add('show');mshE.setAttribute('aria-hidden','false');mshE.querySelector('.msh-t').textContent='Hood Guy';if(S.missionType==='hood_weed'&&S.hoodWeedPicked)mshE.querySelector('.msh-b').textContent='Press E to trade for a hot dog';else if(S.missionType==='hood_weed')mshE.querySelector('.msh-b').textContent='Press E — he needs that bag back';else mshE.querySelector('.msh-b').textContent='Press E to help him out';}
 else{mshE.classList.remove('show');mshE.setAttribute('aria-hidden','true');}}
 updateMissionInfoPopup(closest);
 playYoBiscuitIfClose(dt);
@@ -4391,8 +4399,26 @@ for(var hi=0;hi<cookieHearts.length;hi++)cookieHearts[hi].material.opacity=0.6+p
 if(S.missionActive&&S.missionTimer!=null){S.missionTimer-=dt;document.getElementById('tv').textContent=Math.max(0,Math.ceil(S.missionTimer));if(S.missionTimer<=0)fM();}
 drawMM();renderer.render(scene,camera);}
 window.addEventListener('resize',function(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+if(typeof initVibeJamPortals==='function'){
+initVibeJamPortals({
+scene:scene,
+getPlayer:function(){return dog;},
+spawnPoint:{x:93,y:11,z:52},
+exitPosition:{x:-94,y:11,z:0},
+exitLabel:'VIBE JAM PORTAL',
+startLabel:'BACK WE GO'
+});
+}
+(function(){
+if(!S.arrivedViaVibeJamPortal)return;
+S.tutorialShown=true;
+dog.position.set(93,0,58);
+S.dogAngle=Math.PI;
+S.cameraAngleH=Math.PI;
+if(typeof startGame==='function')startGame();
+})();
 animate();
 }catch(err){var ed=document.createElement('div');ed.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:red;background:#000;padding:20px;z-index:9999;font-size:14px;max-width:80vw;word-break:break-all';ed.textContent='ERROR: '+err.message;document.body.appendChild(ed);}
 </script>
-<script async src="https://vibej.am/2026/widget.js"></script>
+<script>(function(){function skip(){try{return window.__hoodHoundVibeJamLocal===true}catch(e){return false}}if(skip()){console.info('[Hood Hound] vibej.am widget omitted (local test mode). Use ?vjprod=1 with localhost to load it.');return;}var s=document.createElement('script');s.async=true;s.src='https://vibej.am/2026/widget.js';document.body.appendChild(s);})();</script>
 </body></html>
