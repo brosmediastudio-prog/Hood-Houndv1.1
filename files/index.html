@@ -438,6 +438,9 @@ function playSpicyJamdogFinishThenTopDog(){
   try{if(typeof stopMusic==='function')stopMusic();}catch(e0){}
   playVoiceOneShot(['Biscuit topdog jamdog finish.mp3','files/Biscuit topdog jamdog finish.mp3'],0.9,function(){playTopDogSoundtrackFrom38();});
 }
+function playBiscuitShitCopCarsNearBikeGuyVoice(){
+  playVoiceOneShot(['Biscuit shit some cop cars.mp3','files/Biscuit shit some cop cars.mp3'],0.89,null);
+}
 var jambunsBackCooldown=0,hotVendorCalloutPos={x:-69.8,z:6.8};
 function tickHotVendorJambunsBack(dt){
   if(typeof S!=='object'||!S.gameStarted)return;
@@ -446,6 +449,16 @@ function tickHotVendorJambunsBack(dt){
   if(d<13&&jambunsBackCooldown<=0){
     playJambunsBackVoice();
     jambunsBackCooldown=30;
+  }
+}
+var bikeGuyCopCarsCooldown=0,bikeGuyCalloutPos={x:60,z:8};
+function tickBikeGuyCopCarsProximityVoice(dt){
+  if(typeof S!=='object'||!S.gameStarted)return;
+  bikeGuyCopCarsCooldown=Math.max(0,bikeGuyCopCarsCooldown-dt);
+  var d=Math.hypot(dog.position.x-bikeGuyCalloutPos.x,dog.position.z-bikeGuyCalloutPos.z);
+  if(d<13&&bikeGuyCopCarsCooldown<=0){
+    playBiscuitShitCopCarsNearBikeGuyVoice();
+    bikeGuyCopCarsCooldown=32;
   }
 }
 // Soundtrack via HTML audio element (Block Game Hustle)
@@ -2596,9 +2609,8 @@ setTimeout(function(){burst(cookie.position.x,3.5,cookie.position.z,heartColors,
 }
 function moveEndingDogToHouse(g,targetX,targetZ,dt){
 var dx=targetX-g.position.x,dz=targetZ-g.position.z,dist=Math.hypot(dx,dz);
-var k=dt*60;
 if(dist>0.04){
-  var ang=Math.atan2(dx,dz),step=Math.min(0.12*k,dist);
+  var ang=Math.atan2(dx,dz),step=Math.min(0.12,dist);
   g.position.x+=Math.sin(ang)*step;
   g.position.z+=Math.cos(ang)*step;
   g.rotation.y=ang;
@@ -4070,8 +4082,7 @@ updateParticles(dt);
 if(S.shakeTime>0){S.shakeTime-=dt/Math.max(0.25,S.slowMo);if(S.shakeTime<=0){S.shakeAmount=0;S.shakeTime=0;}}
 var mx=0,mz=0;if(S.keys['w']||S.keys['arrowup'])mz=1;if(S.keys['s']||S.keys['arrowdown'])mz=-1;if(S.keys['a']||S.keys['arrowleft'])mx=1;if(S.keys['d']||S.keys['arrowright'])mx=-1;if(jA){mx=-jV.x;mz=-jV.y;}if(S.cookieEnding){mx=0;mz=0;}
 var im=Math.sqrt(mx*mx+mz*mz);
-var moveK=dt*60;
-if(im>0.1){var ta=Math.atan2(mx,mz)+S.cameraAngleH,ad=ta-S.dogAngle;while(ad>Math.PI)ad-=Math.PI*2;while(ad<-Math.PI)ad+=Math.PI*2;S.dogAngle+=ad*0.15*moveK;S.speed=Math.min(S.speed+S.accel*moveK,S.maxSpeed*Math.min(im,1));if(S.keys['shift']){var scap=S.maxSpeed*1.8*Math.min(im,1);S.speed=Math.min(S.speed*Math.pow(1.5,moveK),scap);}}else{S.speed=0;}
+if(im>0.1){var ta=Math.atan2(mx,mz)+S.cameraAngleH,ad=ta-S.dogAngle;while(ad>Math.PI)ad-=Math.PI*2;while(ad<-Math.PI)ad+=Math.PI*2;S.dogAngle+=ad*0.15;S.speed=Math.min(S.speed+S.accel,S.maxSpeed*Math.min(im,1));if(S.keys['shift'])S.speed=Math.min(S.speed*1.5,S.maxSpeed*1.8);}else{S.speed=0;}
 currentSpeed=Math.round(S.speed*520)/100;
 var superFarting=!!(S.superFartReady&&(!S.superFartUntil||t<S.superFartUntil)&&S.keys['g']&&!S.cookieEnding);
 if(superFarting){
@@ -4081,8 +4092,8 @@ if(superFarting){
   superFartSmashBreakables();
   if(t>S.superFartSfxAt){sfx('fart');S.superFartSfxAt=t+0.32;}
 }
-var nx=dog.position.x+Math.sin(S.dogAngle)*S.speed*moveK+(S.blastVX||0)*moveK,nz=dog.position.z+Math.cos(S.dogAngle)*S.speed*moveK+(S.blastVZ||0)*moveK;
-if(S.blastVX||S.blastVZ){var blastDec=Math.pow(0.96,moveK);S.blastVX*=blastDec;S.blastVZ*=blastDec;if(Math.hypot(S.blastVX,S.blastVZ)<0.02){S.blastVX=0;S.blastVZ=0;}}
+var nx=dog.position.x+Math.sin(S.dogAngle)*S.speed+(S.blastVX||0),nz=dog.position.z+Math.cos(S.dogAngle)*S.speed+(S.blastVZ||0);
+if(S.blastVX||S.blastVZ){S.blastVX*=0.96;S.blastVZ*=0.96;if(Math.hypot(S.blastVX,S.blastVZ)<0.02){S.blastVX=0;S.blastVZ=0;}}
 var airborne=S.jumpY>=1.0;if((airborne||!hit(nx,nz,0.6))&&Math.abs(nx)<100&&Math.abs(nz)<100){dog.position.x=nx;dog.position.z=nz;}else{S.speed*=0.2;if(airborne||!hit(nx,dog.position.z,0.6))dog.position.x=nx;else if(airborne||!hit(dog.position.x,nz,0.6))dog.position.z=nz;}
 dog.rotation.y=S.dogAngle;
 // Jump physics
@@ -4130,11 +4141,11 @@ dp.walkAction.paused=true;
 dp.mixer.update(dt);
 }
 if(dp.legs.length>=4&&dp.head&&dp.earL&&dp.earR){
-if(mv){S.legAnim+=S.speed*10*moveK;for(var i=0;i<4;i++)dp.legs[i].rotation.x=Math.sin(S.legAnim+i*Math.PI*0.5)*0.55;S.bobAnim+=dt*10;dp.head.position.y=1.15+Math.sin(S.bobAnim)*0.05;dp.earL.rotation.z=0.15+Math.sin(t*7)*0.15;dp.earR.rotation.z=-0.15-Math.sin(t*7)*0.15;}else{for(var i=0;i<4;i++)dp.legs[i].rotation.x*=0.8;dp.head.position.y=1.15+Math.sin(t*2)*0.02;}
+if(mv){S.legAnim+=S.speed*10;for(var i=0;i<4;i++)dp.legs[i].rotation.x=Math.sin(S.legAnim+i*Math.PI*0.5)*0.55;S.bobAnim+=dt*10;dp.head.position.y=1.15+Math.sin(S.bobAnim)*0.05;dp.earL.rotation.z=0.15+Math.sin(t*7)*0.15;dp.earR.rotation.z=-0.15-Math.sin(t*7)*0.15;}else{for(var i=0;i<4;i++)dp.legs[i].rotation.x*=0.8;dp.head.position.y=1.15+Math.sin(t*2)*0.02;}
 }
 if(dp.modelLegs.length>=4&&!dp.mixer){
 if(mv){
-S.legAnim+=S.speed*10*moveK;
+S.legAnim+=S.speed*10;
 for(var i=0;i<4;i++){
 if(S.peeTimer>0&&i===3)continue;
 dp.modelLegs[i].rotation.x=Math.sin(S.legAnim+i*Math.PI*0.5)*0.45;
@@ -4149,7 +4160,7 @@ dp.modelLegs[i].position.y=dp.modelLegBaseY[i];
 }
 if(dp.modelLegBones.length>=4){
 if(mv){
-S.legAnim+=S.speed*10*moveK;
+S.legAnim+=S.speed*10;
 for(var i=0;i<4;i++){
 if(S.peeTimer>0&&i===3)continue;
 dp.modelLegBones[i].rotation.x=dp.modelLegBoneBaseX[i]+Math.sin(S.legAnim+i*Math.PI*0.5)*0.72;
@@ -4174,7 +4185,7 @@ if(dp.modelRoot&&!dp.mixer&&dp.modelLegs.length<4&&dp.modelLegBones.length<4){
     dp.modelRoot.userData.baseY=Math.max(0,dp.modelRoot.position.y);
   }
   if(mv){
-    S.legAnim+=S.speed*12*moveK;
+    S.legAnim+=S.speed*12;
     dp.modelRoot.position.y=dp.modelRoot.userData.baseY+Math.abs(Math.sin(S.legAnim))*0.1;
     dp.modelRoot.rotation.z=Math.sin(S.legAnim*0.5)*0.07;
     dp.modelRoot.rotation.x=0.05;
@@ -4192,11 +4203,10 @@ if(!camDragging&&S.speed>0.05){
   var targetAngle=S.dogAngle;
   var diff=targetAngle-S.cameraAngleH;
   while(diff>Math.PI)diff-=Math.PI*2;while(diff<-Math.PI)diff+=Math.PI*2;
-  S.cameraAngleH+=diff*(1-Math.pow(0.955,moveK));
+  S.cameraAngleH+=diff*0.045;
 }
 var cD=7.5,cH=3+S.cameraAngleV*4,cx=dog.position.x-Math.sin(S.cameraAngleH)*cD,cz=dog.position.z-Math.cos(S.cameraAngleH)*cD;
-var camLerp=1-Math.pow(0.82,moveK);
-camera.position.x+=(cx-camera.position.x)*camLerp;camera.position.y+=(cH+dog.position.y-camera.position.y)*camLerp;camera.position.z+=(cz-camera.position.z)*camLerp;camera.lookAt(dog.position.x,1.2+dog.position.y,dog.position.z);
+camera.position.x+=(cx-camera.position.x)*0.18;camera.position.y+=(cH+dog.position.y-camera.position.y)*0.18;camera.position.z+=(cz-camera.position.z)*0.18;camera.lookAt(dog.position.x,1.2+dog.position.y,dog.position.z);
 // Apply screen shake offset
 if(S.shakeAmount>0){
   var sa=S.shakeAmount*Math.min(1,S.shakeTime*4);
@@ -4408,6 +4418,7 @@ else{mshE.classList.remove('show');mshE.setAttribute('aria-hidden','true');}}
 updateMissionInfoPopup(closest);
 playYoBiscuitIfClose(dt);
 tickHotVendorJambunsBack(dt);
+tickBikeGuyCopCarsProximityVoice(dt);
 if(S.heat>0)S.heat=Math.max(0,S.heat-dt*0.15);document.querySelectorAll('.paw').forEach(function(p,i){p.classList.toggle('active',i<Math.ceil(S.heat));});
 for(var i=0;i<ia.length;i++){if(ia[i].type==='portal'&&ia[i].group.userData.ring)ia[i].group.userData.ring.rotation.z=t*1.5;}
 for(var i=0;i<mBs.length;i++){
