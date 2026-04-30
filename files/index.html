@@ -27,8 +27,8 @@
 .hs{font-size:.85rem;color:#ccc;font-weight:600}.hs span{color:#f7b733}
 #hm{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:5px;background:rgba(0,0,0,.5);padding:6px 14px;border-radius:20px;border:1px solid rgba(252,74,26,.2)}
 .paw{width:22px;height:22px;opacity:.15;transition:all .3s;filter:grayscale(1)}.paw.active{opacity:1;filter:grayscale(0) drop-shadow(0 0 6px #fc4a1a)}
-#mp-dim{position:fixed;inset:0;z-index:550;pointer-events:none;opacity:0;transition:opacity .38s ease;background:radial-gradient(ellipse 85% 75% at 50% 45%,rgba(0,0,0,.38),rgba(0,0,0,.62));backdrop-filter:saturate(0.75)}
-#mp-dim.on{opacity:1}
+#mp-dim{display:none}
+#mp-dim.on{opacity:0}
 #mp{position:fixed;left:50%;top:92px;transform:translate(-50%,0) scale(0.96);z-index:560;max-width:min(90vw,30rem);width:100%;text-align:center;pointer-events:none;opacity:0;transition:opacity .38s ease,transform .38s ease;filter:drop-shadow(0 8px 22px rgba(0,0,0,.65))}
 #mp.show{opacity:1;transform:translate(-50%,0) scale(0.98)}
 .mt{font-family:'Bungee',cursive;font-size:clamp(.95rem,2.4vw,1.25rem);color:#f7b733;text-shadow:0 2px 10px rgba(0,0,0,.9);background:rgba(0,0,0,.82);padding:10px 18px 7px;border-radius:12px 12px 0 0;border:1px solid rgba(247,183,51,.4);border-bottom:none;line-height:1.22}
@@ -40,10 +40,10 @@
 #mp.mp-complete{top:50%;max-width:min(94vw,42rem);animation:gtaPop .55s cubic-bezier(.2,1.35,.25,1) both;filter:drop-shadow(0 18px 34px rgba(0,0,0,.85)) drop-shadow(0 0 36px rgba(247,183,51,.38))}
 #mp.mp-complete .mt{font-size:clamp(1.5rem,5vw,3rem);letter-spacing:.08em;text-transform:uppercase;color:#ffe9a6;background:linear-gradient(90deg,rgba(12,8,4,.96),rgba(80,35,8,.95),rgba(12,8,4,.96));border:3px solid #f7b733;border-bottom:none;box-shadow:0 0 0 2px rgba(0,0,0,.78),0 0 32px rgba(252,74,26,.55) inset;text-shadow:0 4px 0 #421400,0 0 22px rgba(255,220,90,.95)}
 #mp.mp-complete .ms{font-family:'Bungee',cursive;font-size:clamp(.9rem,2.5vw,1.25rem);color:#fff2c8;background:linear-gradient(180deg,rgba(18,10,4,.97),rgba(4,4,8,.96));border:3px solid #f7b733;border-top:1px solid rgba(247,183,51,.65);box-shadow:0 0 0 2px rgba(0,0,0,.78),0 0 26px rgba(247,183,51,.22) inset;text-transform:uppercase;letter-spacing:.04em}
-body.mp-open #msh,body.mp-open #mm,body.mp-open #cb,body.mp-open #ip,body.mp-open #mc,body.mp-open #hwq{opacity:0.14;filter:grayscale(0.3);transition:opacity .35s ease,filter .35s ease;pointer-events:none}
-body.mp-open #hud{opacity:0.4;transition:opacity .35s ease}
-body.mp-open #at{opacity:0.2;transition:opacity .35s ease}
-body.mp-open #tut{opacity:0.15;transition:opacity .35s ease}
+body.mp-open #msh,body.mp-open #mm,body.mp-open #cb,body.mp-open #ip,body.mp-open #mc,body.mp-open #hwq{opacity:1;filter:none;transition:opacity .35s ease,filter .35s ease;pointer-events:none}
+body.mp-open #hud{opacity:1;transition:opacity .35s ease}
+body.mp-open #at{opacity:1;transition:opacity .35s ease}
+body.mp-open #tut{opacity:1;transition:opacity .35s ease}
 #cb{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:100;background:rgba(6,4,10,.86);border-radius:12px;padding:8px 20px 10px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px 20px;max-width:min(98vw,920px);border:1px solid rgba(247,183,51,.32);box-shadow:0 4px 20px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.2) inset;pointer-events:none}
 .ct{color:#eee;font-size:clamp(.78rem,1.1vw,.88rem);white-space:nowrap;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 12px rgba(0,0,0,.4)}.ct kbd{background:linear-gradient(180deg,rgba(247,183,51,.22),rgba(252,74,26,.12));color:#ffeecc;padding:3px 7px;border-radius:5px;font-weight:800;border:1px solid rgba(247,183,51,.45);box-shadow:0 1px 0 rgba(0,0,0,.35) inset,0 1px 2px rgba(0,0,0,.3);margin-right:3px;font-size:.9em;letter-spacing:.02em}
 @media(max-width:768px){#cb{display:none}}
@@ -102,7 +102,8 @@ fxAudios={
 bark:new Audio("Bicouit_bark_sound.mp3"),
 cat:new Audio("scared_cat.mp3"),
 fart:new Audio("dog_fart_sound.mp3"),
-poop:new Audio("poop_splat_sound.mp3")
+poop:new Audio("poop_splat_sound.mp3"),
+bigPile:new Audio("Big pile of shit!.mp3")
 };
 for(var k in fxAudios){
 fxAudios[k].preload='auto';
@@ -322,10 +323,11 @@ if(fxBuffers[ty]){
   try{
     var src=aC.createBufferSource(),gn=aC.createGain();
     src.buffer=fxBuffers[ty];
-    gn.gain.value=0.9;
+    gn.gain.value=ty==='bigPile'?1.85:0.9;
     src.connect(gn);
     gn.connect(sG||aC.destination);
     src.start(0);
+    if(ty==='bigPile')duckMusicForBigPile((src.buffer&&src.buffer.duration?src.buffer.duration:1.4)*1000);
     return true;
   }catch(e0){}
 }
@@ -343,6 +345,70 @@ else if(ty==='bone'){o=aC.createOscillator();o.type='sine';o.frequency.setValueA
 else if(ty==='trash'){var buf=aC.createBuffer(1,aC.sampleRate*0.4,aC.sampleRate);var d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(aC.sampleRate*0.1));var src=aC.createBufferSource();src.buffer=buf;var fl=aC.createBiquadFilter();fl.type='highpass';fl.frequency.value=800;g.gain.setValueAtTime(0.5,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.4);src.connect(fl);fl.connect(g);src.start(t);}
 else if(ty==='mission_info'){[880,1320].forEach(function(f,i){var oo=aC.createOscillator();oo.type='sine';oo.frequency.value=f;var gg=aC.createGain();gg.connect(sG);gg.gain.setValueAtTime(0.11,t+i*0.07);gg.gain.exponentialRampToValueAtTime(0.01,t+i*0.07+0.16);oo.connect(gg);oo.start(t+i*0.07);oo.stop(t+i*0.07+0.16);});}
 else if(ty==='mission'){[523,659,784].forEach(function(f,i){var oo=aC.createOscillator();oo.type='square';oo.frequency.value=f;var gg=aC.createGain();gg.connect(sG);gg.gain.setValueAtTime(0.15,t+i*0.12);gg.gain.exponentialRampToValueAtTime(0.01,t+i*0.12+0.2);oo.connect(gg);oo.start(t+i*0.12);oo.stop(t+i*0.12+0.2);});}
+}
+function playBigPileVoice(){
+  try{
+    if(playFxAudio('bigPile'))return;
+    var a=new Audio('Big pile of shit!.mp3');
+    a.preload='auto';a.volume=1;
+    a.setAttribute('playsinline','');a.setAttribute('webkit-playsinline','');
+    duckMusicForBigPile(1700);
+    a.addEventListener('ended',restoreBigPileMusicDuck,{once:true});
+    a.addEventListener('error',restoreBigPileMusicDuck,{once:true});
+    var ap=a.play();
+    if(ap&&ap.then){ap.catch(function(){restoreBigPileMusicDuck();playBigPileSpeechFallback();});return;}
+    return;
+  }catch(e){}
+  playBigPileSpeechFallback();
+}
+function playBigPileSpeechFallback(){
+  try{
+    if(!('speechSynthesis' in window)||!window.SpeechSynthesisUtterance)return;
+    var u=new SpeechSynthesisUtterance('Big pile of shit!');
+    var voices=window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];
+    for(var vi=0;vi<voices.length;vi++){
+      if(/^en/i.test(voices[vi].lang||'')){u.voice=voices[vi];break;}
+    }
+    u.rate=0.86;u.pitch=0.72;u.volume=1;
+    duckMusicForBigPile(1700);
+    u.onend=restoreBigPileMusicDuck;
+    u.onerror=restoreBigPileMusicDuck;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+var bigPileDuckTimer=null,bigPileDuckState=null;
+function duckMusicForBigPile(ms){
+  ms=ms||1600;
+  if(bigPileDuckTimer){clearTimeout(bigPileDuckTimer);bigPileDuckTimer=null;}
+  if(!bigPileDuckState){
+    bigPileDuckState={
+      soundtrack:soundtrack?soundtrack.volume:null,
+      post:postMissionMusicEl?postMissionMusicEl.volume:null,
+      musicGain:musicGainNode&&musicGainNode.gain?musicGainNode.gain.value:null
+    };
+  }
+  try{if(soundtrack&&!soundtrack.paused)soundtrack.volume=Math.min(soundtrack.volume,0.14);}catch(e0){}
+  try{if(postMissionMusicEl&&!postMissionMusicEl.paused)postMissionMusicEl.volume=Math.min(postMissionMusicEl.volume,0.14);}catch(e1){}
+  try{
+    if(musicGainNode&&musicGainNode.gain){
+      if(aC&&musicGainNode.gain.setTargetAtTime)musicGainNode.gain.setTargetAtTime(0.09,aC.currentTime,0.04);
+      else musicGainNode.gain.value=0.09;
+    }
+  }catch(e2){}
+  bigPileDuckTimer=setTimeout(restoreBigPileMusicDuck,ms+180);
+}
+function restoreBigPileMusicDuck(){
+  if(bigPileDuckTimer){clearTimeout(bigPileDuckTimer);bigPileDuckTimer=null;}
+  if(!bigPileDuckState)return;
+  try{if(soundtrack&&bigPileDuckState.soundtrack!=null)soundtrack.volume=bigPileDuckState.soundtrack;}catch(e0){}
+  try{if(postMissionMusicEl&&bigPileDuckState.post!=null)postMissionMusicEl.volume=bigPileDuckState.post;}catch(e1){}
+  try{
+    if(musicGainNode&&musicGainNode.gain&&bigPileDuckState.musicGain!=null){
+      if(aC&&musicGainNode.gain.setTargetAtTime)musicGainNode.gain.setTargetAtTime(bigPileDuckState.musicGain,aC.currentTime,0.08);
+      else musicGainNode.gain.value=bigPileDuckState.musicGain;
+    }
+  }catch(e2){}
+  bigPileDuckState=null;
 }
 // Soundtrack via HTML audio element (Block Game Hustle)
 var soundtrack=document.createElement('audio');
@@ -1370,7 +1436,7 @@ function brightenHoodGuyModel(root){
   });
 }
 function brightenNpcModel(root,amount){
-  amount=amount===undefined?0.24:amount;
+  amount=amount===undefined?0.34:amount;
   var W=new THREE.Color(0xffffff);
   root.traverse(function(ch){
     if(!ch.isMesh||!ch.material)return;
@@ -1387,8 +1453,8 @@ function brightenNpcModel(root,amount){
         m.roughness=Math.max(0.35,(m.roughness!==undefined?m.roughness:0.75)*0.88);
         m.metalness=Math.min(0.25,(m.metalness!==undefined?m.metalness:0.05)*0.65);
         if(!m.emissive)m.emissive=new THREE.Color(0,0,0);
-        if(m.color)m.emissive.lerp(m.color,0.16);
-        m.emissiveIntensity=Math.min(0.32,Math.max(0.08,(m.emissiveIntensity||0)*0.7+0.08));
+        if(m.color)m.emissive.lerp(m.color,0.24);
+        m.emissiveIntensity=Math.min(0.5,Math.max(0.14,(m.emissiveIntensity||0)*0.7+0.14));
       }
       m.needsUpdate=true;
     }
@@ -2060,13 +2126,13 @@ function addHoodGuy(x,z){
   g.position.set(x,0,z);
   hoodGuy=g;
   addHoodGuyFallbackToGroup(g);
-  loadModelInto(g, modelPaths.hoodGuy, {clearChildren:true, scale:2.75, rotationY:0, alignBottomY:0, onLoaded: function(root, gltf) {
+  loadModelInto(g, modelPaths.hoodGuy, {clearChildren:true, scale:3.15, rotationY:0, alignBottomY:0, onLoaded: function(root, gltf) {
     var fillL=new THREE.PointLight(0xfff0e0,0.75,18,1.6);
     fillL.position.set(0.2,2.5,0.5);
     g.add(fillL);
     setShadows(root);
     brightenHoodGuyModel(root);
-    brightenNpcModel(root,0.18);
+    brightenNpcModel(root,0.32);
     if (typeof console!=='undefined' && console.log) console.log('[Hood Hound] Hood_Guy clips:', gltf.animations.map(function(a) { return a.name; }));
     g.userData.hgMixer = new THREE.AnimationMixer(root);
     var sets=parseHoodGuyAnimSets(gltf.animations);
@@ -2187,15 +2253,16 @@ var bL=new THREE.PointLight(colHex,0.75,18,1.6);bL.position.set(-1.55,11.5,-0.75
 var labelSp=makeMissionLabelSprite(missionName,colHex);labelSp.position.set(0,4.15,0);g.add(labelSp);g.userData.missionLabel=labelSp;
 var halo=new THREE.Mesh(new THREE.TorusGeometry(1.2,0.045,8,48),new THREE.MeshStandardMaterial({color:colHex,emissive:colHex,emissiveIntensity:0.8,transparent:true,opacity:0.55,depthWrite:false}));
 halo.rotation.x=Math.PI/2;halo.position.set(0,0.08,0);g.add(halo);g.userData.missionHalo=halo;
-loadModelInto(g,modelPaths.bikeGuy,{clearChildren:false,scale:2.4,rotationY:Math.PI,alignBottomY:0,onLoaded:function(root){
+loadModelInto(g,modelPaths.bikeGuy,{clearChildren:false,scale:2.75,rotationY:Math.PI,alignBottomY:0,onLoaded:function(root){
   setShadows(root);
-  brightenNpcModel(root,0.26);
+  brightenNpcModel(root,0.36);
 }});
 var bikeG=new THREE.Group();
 bikeG.position.set(2.2,0,0.7);
 g.add(bikeG);
-loadModelInto(bikeG,modelPaths.bike,{clearChildren:false,scale:2.55,rotationY:Math.PI/2,alignBottomY:0,onLoaded:function(root){
+loadModelInto(bikeG,modelPaths.bike,{clearChildren:false,scale:2.9,rotationY:Math.PI/2,alignBottomY:0,onLoaded:function(root){
   setShadows(root);
+  brightenNpcModel(root,0.24);
 },onError:function(){
   bikeG.scale.set(1.35,1.35,1.35);
   addBikeFallbackToGroup(bikeG);
@@ -2244,9 +2311,9 @@ var bL=new THREE.PointLight(colHex,0.65,16,1.6);bL.position.set(-1.2,9.5,-0.65);
 var labelSp=makeMissionLabelSprite(missionName,colHex);labelSp.position.set(0,3.75,0);g.add(labelSp);g.userData.missionLabel=labelSp;
 var halo=new THREE.Mesh(new THREE.TorusGeometry(1.1,0.045,8,48),new THREE.MeshStandardMaterial({color:colHex,emissive:colHex,emissiveIntensity:0.85,transparent:true,opacity:0.58,depthWrite:false}));
 halo.rotation.x=Math.PI/2;halo.position.set(0,0.08,0);g.add(halo);g.userData.missionHalo=halo;
-loadModelInto(g,modelPaths.hotVendor,{clearChildren:false,scale:2.05,rotationY:Math.PI,alignBottomY:0,onLoaded:function(root){
+loadModelInto(g,modelPaths.hotVendor,{clearChildren:false,scale:2.35,rotationY:Math.PI,alignBottomY:0,onLoaded:function(root){
   setShadows(root);
-  brightenNpcModel(root,0.28);
+  brightenNpcModel(root,0.38);
 },onError:function(){
   var bodyM=new THREE.MeshStandardMaterial({color:0xffaa33,roughness:0.72,flatShading:true});
   var apronM=new THREE.MeshStandardMaterial({color:0xff3344,emissive:0x661111,emissiveIntensity:0.12,roughness:0.65});
@@ -2389,6 +2456,7 @@ function spawnJamDogsReward(missionId){
 if(missionId!=='hood_weed'&&missionId!=='cop_heat'&&missionId!=='levelsio_job'&&missionId!=='spicy_jamdog')return;
 if(jamDogsRewardGroup){scene.remove(jamDogsRewardGroup);jamDogsRewardGroup=null;}
 var g=new THREE.Group();
+var rewardCount=missionId==='levelsio_job'?2:1;
 var sx=dog.position.x,sz=dog.position.z,gi=null;
 for(var ii=0;ii<ia.length;ii++){
   if(missionId==='hood_weed'&&ia[ii].type==='hood_guy')gi=ia[ii];
@@ -2408,11 +2476,18 @@ g.userData.spawnT=clock.getElapsedTime();
 g.userData.picked=false;
 var halo=new THREE.Mesh(new THREE.TorusGeometry(1.0,0.045,8,48),new THREE.MeshStandardMaterial({color:0xffcc22,emissive:0xffaa00,emissiveIntensity:0.8,transparent:true,opacity:0.65,depthWrite:false}));
 halo.rotation.x=Math.PI/2;halo.position.set(0,0.04,0);g.add(halo);g.userData.halo=halo;
-loadModelInto(g,(missionId==='spicy_jamdog'?modelPaths.spicyJamdogs:modelPaths.jamDogs),{clearChildren:false,scale:1.5,rotationY:0,alignBottomY:0.15,onLoaded:function(root){
-  setShadows(root);
-},onError:function(){
-  addJamDogsFallbackToGroup(g);
-}});
+for(var rwi=0;rwi<rewardCount;rwi++){
+  var packG=new THREE.Group();
+  packG.position.set((rwi-(rewardCount-1)*0.5)*1.35,0,0);
+  g.add(packG);
+  (function(pg){
+  loadModelInto(pg,(missionId==='spicy_jamdog'?modelPaths.spicyJamdogs:modelPaths.jamDogs),{clearChildren:false,scale:1.5,rotationY:0,alignBottomY:0.15,onLoaded:function(root){
+    setShadows(root);
+  },onError:function(){
+    addJamDogsFallbackToGroup(pg);
+  }});
+  })(packG);
+}
 scene.add(g);
 jamDogsRewardGroup=g;
 burst(g.position.x,1.1,g.position.z,[0xffcc22,0xff5533,0xffffff],20,1.2,5);
@@ -2596,9 +2671,10 @@ function addHotdogCart(x,z,ry){
   g.position.set(x,0,z);
   g.rotation.y=ry||0;
   scene.add(g);
-  addC(x,z,1.9,1.35);
-  loadModelInto(g,modelPaths.hotdogCart,{clearChildren:false,scale:2.75,rotationY:0,alignBottomY:0,onLoaded:function(root){
+  addC(x,z,2.15,1.55);
+  loadModelInto(g,modelPaths.hotdogCart,{clearChildren:false,scale:3.15,rotationY:0,alignBottomY:0,onLoaded:function(root){
     setShadows(root);
+    brightenNpcModel(root,0.28);
   },onError:function(){
     var bodyM=new THREE.MeshStandardMaterial({color:0xff3344,roughness:0.55,metalness:0.08});
     var metalM=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:0.35,metalness:0.45});
@@ -2650,6 +2726,7 @@ function addPoliceCar(x,z,ry){
   if(spotOverlapsBoxBuilding(x,z,3.2)){x=12;z=3.2;}
   var pg=new THREE.Group();pg.position.set(x,0,z);pg.rotation.y=ry||0;scene.add(pg);  addC(x,z,1.35,2.05);
   var polIa={type:'police_car',x:x,z:z,radius:2.5,poopedOn:false,group:pg,roofY:2.2};
+  pg.userData.ia=polIa;
   var pp={x:x,z:z,hw:1.95,hd:2.5,roofY:2.2,group:pg,ia:polIa};
   policePlatforms.push(pp);
   ia.push(polIa);
@@ -2663,6 +2740,16 @@ function addPoliceCar(x,z,ry){
 var pc1=addPoliceCar(22,4,Math.PI/2);       // center street
 var pc2=addPoliceCar(-20,45,Math.PI/2);     // north back street
 var pc3=addPoliceCar(5,-45,Math.PI/2);      // south back street
+(function markBikeGuyPoliceCar(){
+  var bx=60,bz=8,best=null,bd=Infinity;
+  for(var bi=0;bi<ia.length;bi++){
+    var it=ia[bi];
+    if(!it||it.type!=='police_car')continue;
+    var d2=(it.x-bx)*(it.x-bx)+(it.z-bz)*(it.z-bz);
+    if(d2<bd){bd=d2;best=it;}
+  }
+  if(best){best.isBikeGuyCopCar=true;if(best.group)best.group.userData.isBikeGuyCopCar=true;}
+})();
 
 // === CITY PACK GLB PROPS ===
 // === EXTRA HOOD DETAIL ===
@@ -3165,8 +3252,8 @@ g.position.set(p.x,0,p.z);
 g.rotation.y=Math.PI*0.75;
 g.userData.passedOut=false;
 g.userData.baseY=0;
-loadModelInto(g,modelPaths.cookieCollarBadGuy,{clearChildren:false,scale:2.4,rotationY:Math.PI,alignBottomY:0,onLoaded:function(root,gltf){
-  setShadows(root);brightenNpcModel(root,0.22);
+loadModelInto(g,modelPaths.cookieCollarBadGuy,{clearChildren:false,scale:2.75,rotationY:Math.PI,alignBottomY:0,onLoaded:function(root,gltf){
+  setShadows(root);brightenNpcModel(root,0.34);
   if(gltf&&gltf.animations&&gltf.animations.length){
     g.userData.mixer=new THREE.AnimationMixer(root);
     var best=null,bestScore=-1e9;
@@ -3291,12 +3378,11 @@ function addHardDriveFallback(g){
 function spawnLevelsioHardDrive(x,z){
   if(levelsioDriveGroup||!S.missionActive||S.missionType!=='levelsio_job')return;
   var g=new THREE.Group();
-  g.userData.baseGroundY=0.08;
+  g.userData.baseGroundY=1.72;
   g.userData.spawnT=clock.getElapsedTime();
-  g.userData.popFromY=1.65;
+  g.userData.popFromY=0.34;
   g.userData.picked=false;
-  var hp=offsetPickupAwayFromDog(x,z,3.0,0.8);
-  g.position.set(hp.x,g.userData.popFromY,hp.z);
+  g.position.set(x,g.userData.popFromY,z);
   loadModelInto(g,modelPaths.hardDrive,{clearChildren:false,scale:1.15,rotationY:0,alignBottomY:0.08,onLoaded:function(root){
     setShadows(root);
   },onError:function(){
@@ -3305,7 +3391,7 @@ function spawnLevelsioHardDrive(x,z){
   scene.add(g);
   levelsioDriveGroup=g;
   S.levelsioDriveSpawned=true;
-  showMission('HARD DRIVE FOUND!','Levelsio\'s hard drive popped out. Grab it before the cats do.',4000);
+  showMission('HARD DRIVE FOUND!','Levelsio\'s hard drive popped out of the dumpster. Grab it before the cats do.',4000);
   sfx('bone');
 }
 function maybeSpawnLevelsioDriveFromDumpster(d){
@@ -3411,6 +3497,7 @@ if(S.onPlatform){
     if(pp.ia.poopedOn) return;
     pp.ia.poopedOn=true;
   sfx('poop');
+  if(pp.ia.isBikeGuyCopCar)playBigPileVoice();
   shake(0.15,0.2);showMission('DISRESPECT!','Biscuit poops on the police car! +5 Rep',3000);addR(5);
   var pileG=new THREE.Group();
   var p1=new THREE.Mesh(new THREE.SphereGeometry(0.18,6,6),new THREE.MeshStandardMaterial({color:0x5a3a1a,roughness:0.9,flatShading:true}));p1.position.set(0,0.12,0);p1.scale.set(1,0.7,1);pileG.add(p1);
@@ -3500,7 +3587,7 @@ if(S.missionType==='dumpster_dive'){
 else if(t.type==='cat'){showMission('CHASE!','The cat bolts!',3000);sfx('cat');var c=t.group;c.userData.fleeAngle=Math.atan2(c.position.z-dog.position.z,c.position.x-dog.position.x);c.userData.fleeTimer=3;addR(2);}
 else if(t.type==='portal'){showMission('VIBE JAM PORTAL','Entering the Webring...',3000);}
 else if(t.type==='police_car'&&!t.poopedOn&&S.jumpY>1.0){
-  t.poopedOn=true;sfx('poop');shake(0.15,0.2);showMission('💩 ON THE COP CAR!','Biscuit is a BAD BOY! +10 Rep',3000);addR(10);
+  t.poopedOn=true;sfx('poop');if(t.isBikeGuyCopCar)playBigPileVoice();shake(0.15,0.2);showMission('💩 ON THE COP CAR!','Biscuit is a BAD BOY! +10 Rep',3000);addR(10);
   // Turd on car roof
   var tg=new THREE.Group();
   var t1=new THREE.Mesh(new THREE.SphereGeometry(0.18,6,6),new THREE.MeshStandardMaterial({color:0x5a3a1a,roughness:0.9,flatShading:true}));t1.position.set(0,0.12,0);t1.scale.set(1,0.7,1);tg.add(t1);
@@ -3588,8 +3675,8 @@ function showMission(t,d,dur,boneToast){
     if(dim) dim.classList.remove('on');
     document.body.classList.remove('mp-open');
   }else{
-    if(dim) dim.classList.add('on');
-    document.body.classList.add('mp-open');
+    if(dim) dim.classList.remove('on');
+    document.body.classList.remove('mp-open');
   }
   clearTimeout(p._t);
   p._t=setTimeout(dismissMissionPopup,ms);
