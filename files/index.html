@@ -64,6 +64,7 @@ body.mp-open #tut{opacity:1;transition:opacity .35s ease}
 .ab{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
 .abtn{width:56px;height:56px;border-radius:50%;border:2px solid rgba(247,183,51,.3);background:rgba(0,0,0,.5);color:#f7b733;font-family:'Bungee',cursive;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #mm{position:fixed;bottom:16px;right:16px;z-index:100;width:220px;height:220px;border-radius:50%;background:rgba(0,0,0,.6);border:2px solid rgba(247,183,51,.35);overflow:hidden}#mm canvas{width:100%;height:100%}
+@media(max-width:768px),(pointer:coarse){#mm{width:132px;height:132px;right:10px;bottom:calc(190px + env(safe-area-inset-bottom,0));opacity:.92}.ab{max-width:112px;justify-content:flex-end;flex-wrap:wrap;gap:8px}.abtn{width:50px;height:50px;font-size:.52rem}}
 #at{position:fixed;top:88px;right:16px;z-index:500;background:rgba(0,0,0,.8);border:2px solid rgba(247,183,51,.55);color:#f7b733;font-family:'Bungee',cursive;font-size:.75rem;padding:10px 16px;border-radius:12px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(247,183,51,0.3);user-select:none;-webkit-user-select:none}
 #at:active{background:rgba(247,183,51,.3);transform:scale(0.95)}
 @media(max-width:768px){#at{top:108px;font-size:.7rem;padding:8px 14px}}
@@ -86,7 +87,7 @@ body.mp-open #tut{opacity:1;transition:opacity .35s ease}
 <div id="ip"><span>Press E to interact</span></div><div id="so"></div>
 <button id="at">MUSIC: ON</button>
 <div id="cb" role="log" aria-label="Keyboard controls"><span class="ct"><kbd>WASD</kbd> move</span><span class="ct"><kbd>Shift</kbd> sprint</span><span class="ct"><kbd>Q</kbd> sniff</span><span class="ct"><kbd>F</kbd> / <kbd>B</kbd> bark</span><span class="ct"><kbd>H</kbd> poop</span><span class="ct"><kbd>E</kbd> interact</span><span class="ct"><kbd>G</kbd> fart</span><span class="ct"><kbd>Space</kbd> jump / dismiss pop-up</span><span class="ct">mouse = camera</span></div>
-<div id="mc"><div class="jz" id="jz"><div class="jb"></div><div class="jt" id="jth"></div></div><div class="ab"><div class="abtn" id="bb">BARK</div><div class="abtn" id="bsn">SNIFF</div><div class="abtn" id="bac">ACT</div></div></div>
+<div id="mc"><div class="jz" id="jz"><div class="jb"></div><div class="jt" id="jth"></div></div><div class="ab"><div class="abtn" id="bb">BARK</div><div class="abtn" id="bsn">SNIFF</div><div class="abtn" id="bac">ACT</div><div class="abtn" id="bj">JUMP</div><div class="abtn" id="bf">FART</div></div></div>
 <div id="mm"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
@@ -3754,7 +3755,7 @@ document.addEventListener('mousemove',function(e){if(S.mouseDown){S.cameraAngleH
 renderer.domElement.addEventListener('contextmenu',function(e){e.preventDefault();});
 // Touch-drag camera on canvas (right half of screen on mobile, excludes joystick & UI)
 var camTouchId=null;
-function isUIElement(el){if(!el)return false;var id=el.id||'';if(id==='jz'||id==='jth'||id==='bb'||id==='bsn'||id==='bac'||id==='at')return true;if(el.closest){if(el.closest('#jz'))return true;if(el.closest('#mc'))return true;if(el.closest('#hud'))return true;if(el.closest('#at'))return true;}return false;}
+function isUIElement(el){if(!el)return false;var id=el.id||'';if(id==='jz'||id==='jth'||id==='bb'||id==='bsn'||id==='bac'||id==='bj'||id==='bf'||id==='at')return true;if(el.closest){if(el.closest('#jz'))return true;if(el.closest('#mc'))return true;if(el.closest('#hud'))return true;if(el.closest('#at'))return true;}return false;}
 renderer.domElement.addEventListener('touchstart',function(e){
   for(var i=0;i<e.changedTouches.length;i++){
     var t=e.changedTouches[i];
@@ -3791,12 +3792,18 @@ if(k===' '){
   if(!S.isJumping&&S.jumpY<0.01){S.velocityY=0.65;S.isJumping=true;S.jumpHeld=true;sfx('bark');e.preventDefault();}
 }});
 document.addEventListener('keyup',function(e){if(e.key===' ')S.jumpHeld=false;});
+function mobileJump(){
+  if(dismissMissionPopup())return;
+  if(!S.isJumping&&S.jumpY<0.01){S.velocityY=0.65;S.isJumping=true;S.jumpHeld=true;sfx('bark');}
+}
 var jA=false,jV={x:0,y:0},jZ=document.getElementById('jz'),jTh=document.getElementById('jth');
 if(jZ){function hJ(e){var t=e.touches?e.touches[0]:e,r=jZ.getBoundingClientRect(),cx=r.left+70,cy=r.top+r.height-60,dx=t.clientX-cx,dy=t.clientY-cy,d=Math.min(Math.sqrt(dx*dx+dy*dy),45),a=Math.atan2(dy,dx);dx=Math.cos(a)*d;dy=Math.sin(a)*d;jTh.style.transform='translate('+dx+'px,'+dy+'px)';jV.x=dx/45;jV.y=dy/45;jA=true;}
 jZ.addEventListener('touchstart',function(e){e.preventDefault();hJ(e);});jZ.addEventListener('touchmove',function(e){e.preventDefault();hJ(e);});jZ.addEventListener('touchend',function(){jA=false;jV={x:0,y:0};jTh.style.transform='';});}
 var bbtn=document.getElementById('bb');if(bbtn)bbtn.addEventListener('touchstart',function(){doBark();});
 var bsn=document.getElementById('bsn');if(bsn)bsn.addEventListener('touchstart',function(){togS();});
 var bac=document.getElementById('bac');if(bac)bac.addEventListener('touchstart',function(){doI();});
+var bj=document.getElementById('bj');if(bj){bj.addEventListener('touchstart',function(e){e.preventDefault();mobileJump();},{passive:false});bj.addEventListener('touchend',function(){S.jumpHeld=false;});}
+var bf=document.getElementById('bf');if(bf){bf.addEventListener('touchstart',function(e){e.preventDefault();S.keys['g']=true;if(!S.superFartReady)doFart();},{passive:false});bf.addEventListener('touchend',function(){S.keys['g']=false;});bf.addEventListener('touchcancel',function(){S.keys['g']=false;});}
 
 // Minimap
 var mmC=document.createElement('canvas');mmC.width=220;mmC.height=220;document.getElementById('mm').appendChild(mmC);var mCtx=mmC.getContext('2d');
