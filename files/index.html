@@ -768,10 +768,11 @@ weedPack:['loststash+3d+model.glb','files/loststash+3d+model.glb'],
 cookieCollar:['cookie_collar.glb','files/cookie_collar.glb'],
 cookieCollarBadGuy:['thief.glb','files/thief.glb'],
 graffitiPng:['graffiti.webp','mix_spray_jam.webp','cursor_jam.webp','spray_jam.webp',
-  'cursor_2026.webp','juiced009.webp','cursor_wall_bleed.webp','levesio_graff.webp',
+  'cursor_2026.webp','juiced009.webp','juiced009.png','juiced009.jpg','juiced009.jpeg','cursor_wall_bleed.webp','levesio_graff.webp',
   'tripo_3D_graff.webp','Cursor_graff 2.webp','Cursor_graff 3.webp','glif_graff 2.webp',
   'Jamdogs_billboard.webp','Biscuit_game_billboard.webp','jamdogs_billboard2.webp',
-  'Vibejam_billboard.webp','glif.webp','sk13_.webp','Soret_wall.webp','bolt_new_transp.webp']};
+  'Vibejam_billboard.webp','glif.webp','sk13_.webp','Soret_wall.webp','bolt_new_transp.webp',
+  'wall_windows.png','wall_windows.webp','wall_windows.jpg']};
 var boxBldgCol=0;
 var BLDG_SLOTS=[[-70,18,12,10,10,0],[-55,20,10,14,12,0],[-30,17,8,8,8,0],[10,18,10,10,10,0],[25,20,8,12,12,0],[65,20,10,13,12,0],[80,18,8,8,8,0],[-70,-18,10,8,10,0],[-55,-20,12,12,12,0],[-30,-18,8,6,8,0],[10,-18,10,9,10,0],[50,-18,10,7,10,0],[65,-20,8,10,8,0],[80,-18,10,6,10,0],[-55,55,14,8,10,0],[-25,55,10,6,8,0],[13,55,12,10,10,0],[29,55,10,7,8,0],[60,55,14,9,10,0],[-50,-55,12,7,10,0],[-25,-55,10,10,8,0],[13,-55,14,8,10,0],[29,-55,10,6,8,0],[60,-55,12,9,10,0],[-74,-52,6,10,8,0],[-50,-52,6,8,8,0],[-74,-68,6,8,12,0],[-50,-68,6,9,8,0],[-29,35,8,7,7,0],[72,35,8,7,7,0],[-29,-36,8,7,7,0],[72,-36,8,7,7,0],[-15,68,8,9,7,0],[20,68,10,8,10,0],[55,68,9,8,7,0],[-15,-68,8,9,7,0],[20,-68,10,8,8,0],[55,-68,9,10,7,0],[-85,10,7,7,14,0],[-85,-10,7,7,16,0],[85,10,7,7,15,0],[85,-10,7,7,13,0],[-85,40,7,8,18,0],[85,40,7,8,16,0],[-85,-40,7,8,17,0],[85,-40,7,8,15,0],[0,80,10,8,20,0],[0,-80,10,8,18,0]];
 // Slots that exist in BLDG_SLOTS but were intentionally NOT placed by
@@ -800,6 +801,7 @@ function nudgeOffBuildings(x,z,pad){
   return {x:x,z:z};
 }
 var boxBuildings=[];
+var hoodJuiced009LoaderBusy=false, hoodJuiced009DecalsMounted=false;
 function shuffleInPlace(a){
   for(var i=a.length-1;i>0;i--){
     var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;
@@ -837,13 +839,116 @@ function addUserGraffitiPngToBuilding(b, mat, spec){
     plane.rotation.y=Math.PI/2;
     plane.position.set(w*0.5+o,yP,u);
   }
+  if(spec&&spec.hoodJuicedMark){ plane.userData.hoodJuiced009=1; plane.renderOrder=12; }
   b.group.add(plane);
+}
+function purgeJuiced009DecalsFromBuildings(){
+  if(!boxBuildings||!boxBuildings.length) return;
+  var bi, pla, ch, ci, chm, matSeen={};
+  for(bi=0;bi<boxBuildings.length;bi++){
+    pla=boxBuildings[bi]&&boxBuildings[bi].group;
+    if(!pla) continue;
+    ch=pla.children.slice(0);
+    for(ci=0;ci<ch.length;ci++){
+      chm=ch[ci];
+      if(chm&&chm.userData&&chm.userData.hoodJuiced009){
+        pla.remove(chm);
+        try{ if(chm.geometry&&chm.geometry.dispose) chm.geometry.dispose(); }catch(eG){}
+        if(chm.material){
+          try{
+            var mid=typeof chm.material.uuid==='string'?chm.material.uuid:String(bi+'_'+ci);
+            if(!matSeen[mid]){ matSeen[mid]=1; chm.material.dispose(); }
+          }catch(eM){}
+        }
+      }
+    }
+  }
+}
+/** Shared by batch graffiti & standalone Juiced pass — façade facing (fx,fz), avoid +Z window grid. */
+function makeJuiced009GraffNearRoadGlobal(b, faceWX, faceWZ){
+  var w=b.w, d=b.d, h=b.h, o=0.12, hMax=h*0.75, pw, ph, wallSpan, wMax, gClear, yP, face, u, qi, tries,
+    uniq=[], sj={}, seq,
+    pref=pickGraffFaceFacingWorldPoint(b, faceWX!==undefined&&faceWX!==null?Number(faceWX):0, faceWZ!==undefined&&faceWZ!==null?Number(faceWZ):0);
+  seq=[pref,(pref+1)&3,(pref+3)&3,(pref+2)&3];
+  for(qi=0;qi<seq.length;qi++){ var sf=(seq[qi]|0)&3; if(sj[sf]) continue; sj[sf]=1; uniq.push(sf); }
+  for(qi=0;qi<uniq.length;qi++){
+    face=uniq[qi]; tries=0;
+    while(tries<34){ tries++;
+      wallSpan=(face===0||face===1)?w:d;
+      wMax=wallSpan*0.75;
+      pw=Math.min(wMax, wallSpan*(0.22+Math.random()*0.5));
+      ph=Math.min(hMax, h*(0.22+Math.random()*0.52));
+      pw=Math.max(0.65, Math.min(pw, wMax));
+      ph=Math.max(0.48, Math.min(ph, hMax));
+      gClear=0.14+Math.random()*0.09;
+      yP=ph*0.5+gClear;
+      if(yP+ph*0.5>h-0.15) yP=Math.max(ph*0.5+0.12, h-0.15-ph*0.5);
+      u=(Math.random()-0.5)*((face===0||face===1)?w:d)*0.22;
+      if(face===0 && b.winFront && b.winFront.length){
+        if(graffitiOverlapsWindowFront(b, u, yP, pw*0.53, ph*0.53)) continue;
+      }
+      return {face:face, pw:pw, ph:ph, yP:yP, u:u, o:o};
+    }
+  }
+  return {face:2, pw:Math.min(w*0.42,w*0.75), ph:Math.min(h*0.45,hMax), yP:h*0.44, u:0, o:o};
+}
+function applyJuiced009DecalsStandalone(mapTex){
+  if(!mapTex||!mapTex.image||!mapTex.image.width||!boxBuildings||!boxBuildings.length) return;
+  purgeJuiced009DecalsFromBuildings();
+  var mat=new THREE.MeshBasicMaterial({map:mapTex,transparent:true,side:THREE.DoubleSide,depthTest:true,depthWrite:false,premultipliedAlpha:false,opacity:1,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-4});
+  if(mat.toneMapped!==undefined) mat.toneMapped=false;
+  if('encoding' in mapTex && THREE.sRGBEncoding) mapTex.encoding=THREE.sRGBEncoding;
+  else if('colorSpace' in mapTex && THREE.SRGBColorSpace) mapTex.colorSpace=THREE.SRGBColorSpace;
+  mapTex.needsUpdate=true;
+  /** [ bx, bz, lookX, lookZ ] — façades toward central E–W road (near z≈0). */
+  var anchors=[[10,18,12,4],[-55,20,-58,7],[25,-18,28,-4],[65,-18,62,-7],[-70,-18,-68,-4]];
+  var exPick={}, ai, sbi, bgn, rsp, placed=0;
+  for(ai=0;ai<anchors.length;ai++){
+    var row=anchors[ai];
+    sbi=getBoxBuildingIndexNearestExcluding(row[0], row[1], exPick);
+    exPick[sbi]=1;
+    bgn=boxBuildings[sbi];
+    if(!bgn) continue;
+    rsp=makeJuiced009GraffNearRoadGlobal(bgn, row[2], row[3]);
+    rsp.hoodJuicedMark=1;
+    rsp.o=0.34;
+    addUserGraffitiPngToBuilding(bgn, mat, rsp);
+    placed++;
+  }
+  if(placed>0) hoodJuiced009DecalsMounted=true;
+}
+function tryLoadJuiced009DecalsStandalone(){
+  if(hoodJuiced009DecalsMounted) return;
+  if(hoodJuiced009LoaderBusy) return;
+  if(typeof THREE==='undefined'||!THREE.TextureLoader||!boxBuildings||!boxBuildings.length) return;
+  if(!renderer){ setTimeout(tryLoadJuiced009DecalsStandalone, 400); return; }
+  hoodJuiced009LoaderBusy=true;
+  var cand=['juiced009.webp','files/juiced009.webp','juiced009.png','files/juiced009.png','juiced009.jpg','files/juiced009.jpg'],
+    ix=0, L=new THREE.TextureLoader();
+  if(L.setCrossOrigin) L.setCrossOrigin('');
+  function bumpAnisoJu(t){ if(renderer&&renderer.capabilities&&renderer.capabilities.getMaxAnisotropy) t.anisotropy=Math.min(8, renderer.capabilities.getMaxAnisotropy()); }
+  function next(){
+    if(ix>=cand.length){ hoodJuiced009LoaderBusy=false; return; }
+    var url=cand[ix++];
+    L.load(url, function(tex){
+      if(!tex||!tex.image||!(tex.image.width>0)){ next(); return; }
+      var outTex;
+      try{ outTex=applyGraffitiPngToCanvasTexture(tex,'juiced009'); }
+      catch(eJu){ outTex=tex; }
+      if(!outTex||!outTex.image||!(outTex.image.width>0)){ next(); return; }
+      bumpAnisoJu(outTex);
+      outTex.needsUpdate=true;
+      applyJuiced009DecalsStandalone(outTex);
+      hoodJuiced009LoaderBusy=false;
+    }, undefined, next);
+  }
+  next();
 }
 function graffitiLayoutFingerprint(){
   try{
     if(!boxBuildings.length) return'0';
     return String(BLDG_SLOTS?BLDG_SLOTS.length:0)+'|'+String(boxBuildings.length)+'|'+
-      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m075|lv44_juice009_regular_graff';
+      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|wall_windows_x12';
   }catch(e){ return'0'; }
 }
 function graffitiOverlapsWindowFront(b, cx, cy, ahw, ahh){
@@ -878,7 +983,7 @@ function isPackFullBleedGraffKey(gk){
     s.indexOf('glif_graff_2')>=0||s.indexOf('tripo_3d_graff_3')>=0||
     s.indexOf('jamdogs_billboard')>=0||s.indexOf('biscuit_game_billboard')>=0||
     s.indexOf('jamdogsbillboard2')>=0||s.indexOf('jamdogs_billboard2')>=0||
-    s.indexOf('vibejam_billboard')>=0;
+    s.indexOf('vibejam_billboard')>=0||s.indexOf('wall_windows')>=0;
 }
 function isJamdogsBillboardGraffKey(gk){
   if(!gk) return false;
@@ -1041,19 +1146,28 @@ function applyGraffitiPngToCanvasTexture(texIn, gk){
   if(!img||!img.width||!img.naturalWidth||mode==='none'){return texIn;}
   try{w=img.naturalWidth||img.width;h=img.naturalHeight||img.height;}catch(e1){return texIn;}
   if(!w||!h) return texIn;
+  // Full façade sheets: keep pixels — white/grey knockout would eat real window masonry.
+  if(gk&&String(gk).toLowerCase().indexOf('wall_windows')>=0) return texIn;
   c=document.createElement('canvas');
   c.width=w;c.height=h;
   ctx=c.getContext('2d');
   if(!ctx) return texIn;
   try{ctx.drawImage(img,0,0);d=ctx.getImageData(0,0,w,h);}catch(e2){ return texIn;}
+  var gKl=gk?String(gk).toLowerCase():'';
+  var isJuicedGk=gKl.indexOf('juiced009')>=0||gKl==='juice009'||(gKl.indexOf('juice')>=0&&gKl.indexOf('009')>=0);
   for(i=0;i<d.data.length;i+=4){
     r=d.data[i];g=d.data[i+1];b=d.data[i+2];a=d.data[i+3];
     if(a<4) continue;
     mx=Math.max(r,g,b);mn=Math.min(r,g,b);
     sat=mx-mn;avg=(r+g+b)/3;
     dr=Math.abs(r-avg);dg=Math.abs(g-avg);db=Math.abs(b-avg);
-    if(r>252&&g>252&&b>252){d.data[i+3]=0;continue;}
-    if(sat<22 && avg>200 && (dr+dg+db)/3<12) d.data[i+3]=0;
+    if(isJuicedGk){
+      if(r>246&&g>246&&b>246){d.data[i+3]=0;continue;}
+      if(sat<36 && avg>148 && avg<248 && (dr+dg+db)/3<18){d.data[i+3]=0;continue;}
+    }else{
+      if(r>252&&g>252&&b>252){d.data[i+3]=0;continue;}
+      if(sat<22 && avg>200 && (dr+dg+db)/3<12){d.data[i+3]=0;continue;}
+    }
   }
   ctx.putImageData(d,0,0);
   nt=new THREE.CanvasTexture(c);
@@ -1068,8 +1182,18 @@ function applyGraffitiPngToCanvasTexture(texIn, gk){
 }
 function tryLoadRandomGraffitiPng(){
   if(!boxBuildings.length||!window.THREE||!THREE.TextureLoader)return;
-  var list=getGraffitiImagePathsFromUrl()||getDefaultGraffitiLoadList();
+  var forcedJuiced=typeof assetCandidates==='function'?assetCandidates(['juiced009.webp','juiced009.png','juiced009.jpg','juiced009.jpeg']):['juiced009.webp','files/juiced009.webp'];
+  var forcedWallWin=typeof assetCandidates==='function'?assetCandidates(['wall_windows.png','wall_windows.webp','wall_windows.jpg']):['wall_windows.png','files/wall_windows.png'];
+  var urlOv=getGraffitiImagePathsFromUrl();
+  var list=!urlOv||!urlOv.length?getDefaultGraffitiLoadList():urlOv.concat(forcedJuiced).concat(forcedWallWin);
   if(!list.length) return;
+  (function dedupeLp(){
+    var seen={},out=[],qi,qn;for(qi=0;qi<list.length;qi++){
+      qn=String(list[qi]); var qBare=qn.indexOf('?')===-1?qn:qn.slice(0,qn.indexOf('?'));
+      try{ qBare=qBare.replace(/\\/g,'/');}catch(ebq){}
+      if(seen[qBare]) continue; seen[qBare]=1; out.push(list[qi]);
+    }list=out;
+  })();
   var nPl=Math.min(52, Math.max(16, Math.floor(boxBuildings.length*0.55+10)));
   var L=new THREE.TextureLoader();
   if(L.setCrossOrigin) L.setCrossOrigin('anonymous');
@@ -1108,12 +1232,12 @@ function tryLoadRandomGraffitiPng(){
       ph=Math.max(0.4, Math.min(ph, hMax));
       gClear=0.14+Math.random()*0.1;
       yP=ph*0.5+gClear;
-      if(yP+ph*0.5>h-0.15) yP=Math.max(ph*0.5+0.12, h-0.15-ph*0.5);
-      u=(Math.random()-0.5);
-      if(face===0||face===1) u*=w*0.2; else u*=d*0.2;
-      if(face===0 && b.winFront && b.winFront.length){
-        if(graffitiOverlapsWindowFront(b, u, yP, pw*0.5, ph*0.5)) continue;
-      }
+    if(yP+ph*0.5>h-0.15) yP=Math.max(ph*0.5+0.12, h-0.15-ph*0.5);
+    u=(Math.random()-0.5);
+    if(face===0||face===1) u*=w*0.2; else u*=d*0.2;
+    if(face===0 && b.winFront && b.winFront.length){
+      if(graffitiOverlapsWindowFront(b, u, yP, pw*0.51, ph*0.51)) continue;
+    }
       return {face:face, pw:pw, ph:ph, yP:yP, u:u, o:o};
     }
     wallSpan=w;
@@ -1126,6 +1250,72 @@ function tryLoadRandomGraffitiPng(){
     u=(Math.random()-0.5)*w*0.2;
     return {face:1, pw:pw, ph:ph, yP:yP, u:u, o:o};
   }
+  /** Juiced009: prefer walls without procedural white windows (faces 1–3); strictly avoid +Z windows on face 0. */
+  function makeJuiced009GraffSpecForBuilding(b){
+    var w=b.w, d=b.d, h=b.h, o=0.12, hMax=h*0.75, pw, ph, wallSpan, wMax, gClear, yP, face, u, tries=0;
+    while(tries<160){
+      tries++;
+      if(tries<=72) face=[1,2,3][Math.floor(Math.random()*3)];
+      else face=Math.floor(Math.random()*4);
+      wallSpan=(face===0||face===1)?w:d;
+      wMax=wallSpan*0.75;
+      pw=Math.min(wMax, wallSpan*(0.2+Math.random()*0.52));
+      ph=Math.min(hMax, h*(0.2+Math.random()*0.52));
+      pw=Math.max(0.55, Math.min(pw, wMax));
+      ph=Math.max(0.45, Math.min(ph, hMax));
+      gClear=0.14+Math.random()*0.1;
+      yP=ph*0.5+gClear;
+      if(yP+ph*0.5>h-0.15) yP=Math.max(ph*0.5+0.12, h-0.15-ph*0.5);
+      u=(Math.random()-0.5);
+      if(face===0||face===1) u*=w*0.2; else u*=d*0.2;
+      if(face===0 && b.winFront && b.winFront.length){
+        if(graffitiOverlapsWindowFront(b, u, yP, pw*0.53, ph*0.53)) continue;
+      }
+      return {face:face, pw:pw, ph:ph, yP:yP, u:u, o:o};
+    }
+    return makeGraffSpecForBuilding(b,'');
+  }
+  /** Pick a façade facing toward (faceWX,faceWZ)—use with main-road anchors so tags read from the street. */
+  function makeJuiced009GraffSpecNearRoad(b, faceWX, faceWZ){
+    var w=b.w, d=b.d, h=b.h, o=0.12, hMax=h*0.75, pw, ph, wallSpan, wMax, gClear, yP, face, u, qi, tries,
+      uniq=[], sj={}, seq, pref=pickGraffFaceFacingWorldPoint(b, faceWX!==undefined&&faceWX!==null?Number(faceWX):0, faceWZ!==undefined&&faceWZ!==null?Number(faceWZ):0);
+    seq=[pref,(pref+1)&3,(pref+3)&3,(pref+2)&3];
+    for(qi=0;qi<seq.length;qi++){ var sf=(seq[qi]|0)&3; if(sj[sf]) continue; sj[sf]=1; uniq.push(sf); }
+    for(qi=0;qi<uniq.length;qi++){
+      face=uniq[qi];
+      tries=0;
+      while(tries<32){ tries++;
+        wallSpan=(face===0||face===1)?w:d;
+        wMax=wallSpan*0.75;
+        pw=Math.min(wMax, wallSpan*(0.22+Math.random()*0.5));
+        ph=Math.min(hMax, h*(0.22+Math.random()*0.52));
+        pw=Math.max(0.6, Math.min(pw, wMax));
+        ph=Math.max(0.45, Math.min(ph, hMax));
+        gClear=0.14+Math.random()*0.09;
+        yP=ph*0.5+gClear;
+        if(yP+ph*0.5>h-0.15) yP=Math.max(ph*0.5+0.12, h-0.15-ph*0.5);
+        u=(Math.random()-0.5)*((face===0||face===1)?w:d)*0.22;
+        if(face===0 && b.winFront && b.winFront.length){
+          if(graffitiOverlapsWindowFront(b, u, yP, pw*0.53, ph*0.53)) continue;
+        }
+        return {face:face, pw:pw, ph:ph, yP:yP, u:u, o:o};
+      }
+    }
+    return makeJuiced009GraffSpecForBuilding(b);
+  }
+  function pushJuiced009RegularGraff(gk, bi, towardX, towardZ){
+    if(gk==null||!graffitiTexByKey[gk]||!boxBuildings[bi]) return;
+    excl[bi]=1; oi++;
+    var rt=graffitiTexByKey[gk], rb=boxBuildings[bi],
+      rsp=arguments.length>=4?makeJuiced009GraffSpecNearRoad(rb, towardX, towardZ):makeJuiced009GraffSpecForBuilding(rb);
+    rsp.k=gk;
+    rsp.hoodJuicedMark=1;
+    rsp.o=Math.max(rsp&&rsp.o!==undefined&&rsp.o!==null?rsp.o:0.12,0.26);
+    if(!matCache2[gk]){ matCache2[gk]=new THREE.MeshBasicMaterial({map:rt, transparent:true, side:THREE.DoubleSide, depthTest:true, depthWrite:false, premultipliedAlpha:false, opacity:1, polygonOffset:true, polygonOffsetFactor:-5, polygonOffsetUnits:-3});
+      if(matCache2[gk].toneMapped!==undefined) matCache2[gk].toneMapped=false; }
+    addUserGraffitiPngToBuilding(rb, matCache2[gk], rsp);
+    items.push({bi:bi, k:gk, face:rsp.face, pw:rsp.pw, ph:rsp.ph, yP:rsp.yP, u:rsp.u, o:rsp.o});
+  }
   function placeWhenReady(){
     var keyList=Object.keys(graffitiTexByKey);
     if(!keyList.length) return;
@@ -1137,6 +1327,16 @@ function tryLoadRandomGraffitiPng(){
       for(i=0;i<st.items.length;i++){
         k=st.items[i].k;
         if(!boxBuildings[st.items[i].bi] || !k || !graffitiTexByKey[k]){ valid=false; break; }
+      }
+      var ljEarly=null, jjK=null;
+      for(i=0;i<keyList.length;i++){
+        ljEarly=String(keyList[i]).toLowerCase();
+        if(ljEarly.indexOf('juiced009')>=0||ljEarly==='juice009'||(ljEarly.indexOf('juice')>=0&&ljEarly.indexOf('009')>=0)){ jjK=keyList[i]; break; }
+      }
+      if(valid&&jjK){
+        var jHit=false;
+        for(i=0;i<st.items.length;i++){ if(st.items[i].k===jjK){ jHit=true; break; } }
+        if(!jHit) valid=false;
       }
       if(valid){
         var matByKey={};
@@ -1167,7 +1367,7 @@ function tryLoadRandomGraffitiPng(){
     for(i=0;i<keyList.length;i++) if(isSoretWallGraffKey(keyList[i])){ soretWallKey=keyList[i]; break; }
     for(i=0;i<keyList.length;i++) if(isBoltTranspGraffKey(keyList[i])){ boltTranspKey=keyList[i]; break; }
     for(i=0;i<keyList.length;i++) if(isCursorWallBleedGraffKey(keyList[i])){ cursorWallBleedKey=keyList[i]; break; }
-    for(i=0;i<keyList.length;i++) if(String(keyList[i]).toLowerCase().indexOf('juice009')>=0){ juice009Key=keyList[i]; break; }
+    for(i=0;i<keyList.length;i++){ var lj=String(keyList[i]).toLowerCase(); if(lj.indexOf('juiced009')>=0||lj==='juice009'||(lj.indexOf('juice')>=0&&lj.indexOf('009')>=0)){ juice009Key=keyList[i]; break; } }
     var randKeys=[];
     for(i=0;i<keyList.length;i++){
       var rk=keyList[i];
@@ -1361,13 +1561,31 @@ function tryLoadRandomGraffitiPng(){
           if(boxBuildings[sbi]) pushFullBleed(ng.k, sbi, spreadAx, spreadAz);
         }
       }
+      var wallWinKey=findGraffKeyByNeedle('wall_windows');
+      if(wallWinKey){
+        /** Twelve full-bleed window façades: [ bx, bz, faceWX, faceWZ ]. */
+        var wwa=[
+          [-72,20,15,50],[-28,55,-20,40],[72,18,-10,25],[12,-18,0,-6],[58,-55,20,-40],[-58,-58,-45,-55],
+          [-85,40,45,42],[85,-35,-55,-30],[22,-68,5,-52],[-82,-42,52,-44],[48,54,-15,42],[-72,-52,82,-52]
+        ];
+        for(var wwi=0;wwi<wwa.length;wwi++){
+          var ww=wwa[wwi];
+          spreadAx=ww[0]; spreadAz=ww[1];
+          sbi=getBoxBuildingIndexNearestExcludingNoGraffKeyConflict(excl, spreadAx, spreadAz, wallWinKey, items);
+          if(sbi<0||!boxBuildings[sbi]) sbi=getBoxBuildingIndexNearestExcluding(spreadAx, spreadAz, excl);
+          if(boxBuildings[sbi]) pushFullBleed(wallWinKey, sbi, ww[2], ww[3]);
+        }
+      }
       if(juice009Key){
-        var juice009Anch=[[-70,18],[10,-18],[60,55]];
+        /** [ bx, bz, lookX, lookZ ] anchors on primary street-facing rows; gazes toward central E–W arterial (near z≈0). */
+        var juice009Anch=[[10,18,12,5],[-55,20,-58,8],[25,-18,28,-5],[65,-18,62,-8],[-70,-18,-68,-5]];
         for(spreadGi=0;spreadGi<juice009Anch.length;spreadGi++){
-          spreadAx=juice009Anch[spreadGi][0]; spreadAz=juice009Anch[spreadGi][1];
+          var jrow=juice009Anch[spreadGi];
+          spreadAx=jrow[0]; spreadAz=jrow[1];
+          var jgx=jrow[2], jgz=jrow[3];
           sbi=getBoxBuildingIndexNearestExcludingNoGraffKeyConflict(excl, spreadAx, spreadAz, juice009Key, items);
           if(sbi<0||!boxBuildings[sbi]) sbi=getBoxBuildingIndexNearestExcluding(spreadAx, spreadAz, excl);
-          if(boxBuildings[sbi]) pushRegularGraff(juice009Key, sbi);
+          if(boxBuildings[sbi]) pushJuiced009RegularGraff(juice009Key, sbi, jgx, jgz);
         }
       }
     }
@@ -1425,9 +1643,9 @@ function tryLoadRandomGraffitiPng(){
         }
       }
     }
-    try{ localStorage.setItem('hoodHoundGraffitiV1', JSON.stringify({v:20, fp:fp, items:items})); }catch(e2){}
+    try{ localStorage.setItem('hoodHoundGraffitiV1', JSON.stringify({v:22, fp:fp, items:items})); }catch(e2){}
   }
-  function onDoneLoad(){ rem--; if(rem===0) placeWhenReady(); }
+  function onDoneLoad(){ rem--; if(rem===0){ placeWhenReady(); setTimeout(tryLoadJuiced009DecalsStandalone, 550); } }
   for(li=0; li<list.length; li++){(function(path){
     L.load(path, function(tex){ addProcessed(tex, path); onDoneLoad(); }, undefined, onDoneLoad);
   })(list[li]);}
@@ -1532,6 +1750,7 @@ for(var i=0;i<list.length;i++){
 var raw=list[i];
 if(!raw)continue;
 var alt=[raw];
+if(String(raw).indexOf('/')===-1&&String(raw).indexOf('\\')===-1)alt.push('files/'+raw);
 for(var a=0;a<alt.length;a++){
 var p=alt[a],sep=p.indexOf('?')===-1?'?':'&',withBust=p+sep+'v='+modelCacheBust;
 if(!seen[withBust]){seen[withBust]=true;out.push(withBust);}
@@ -1946,10 +2165,10 @@ function flattenBoxBuildingWalls(b){
 }
 var cookieCollarGroup=null, cookieCollarBadGuyGroup=null, levelsioDriveGroup=null, jamDogsRewardGroup=null, vibejamBandanaGroup=null, toxicWasteGroup=null, spicyStarterGroup=null, spicyCrateGroups=[];
 var gnd=new THREE.Mesh(new THREE.PlaneGeometry(250,250),M.dirt);gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
-var gPs=[[-60,35,25,30],[55,35,25,25],[-70,0,15,15],[70,0,15,15]];
-for(var i=0;i<gPs.length;i++){var gm=new THREE.Mesh(new THREE.PlaneGeometry(gPs[i][2],gPs[i][3]),M.grass);gm.rotation.x=-Math.PI/2;gm.position.set(gPs[i][0],0.01,gPs[i][1]);scene.add(gm);}
+var gPs=[[-60,35,25,30],[55,35,25,25],[-70,0,15,15],[70,0,15,15]],grassPatchMeshes=[],roadPatchMeshes=[];
+for(var i=0;i<gPs.length;i++){var gm=new THREE.Mesh(new THREE.PlaneGeometry(gPs[i][2],gPs[i][3]),M.grass);gm.rotation.x=-Math.PI/2;gm.position.set(gPs[i][0],0.01,gPs[i][1]);gm.receiveShadow=true;scene.add(gm);grassPatchMeshes.push(gm);}
 
-function mkR(x,z,w,d){var r=new THREE.Mesh(new THREE.PlaneGeometry(w,d),M.road);r.rotation.x=-Math.PI/2;r.position.set(x,0.02,z);r.receiveShadow=true;scene.add(r);}
+function mkR(x,z,w,d){var r=new THREE.Mesh(new THREE.PlaneGeometry(w,d),M.road);r.rotation.x=-Math.PI/2;r.position.set(x,0.02,z);r.receiveShadow=true;scene.add(r);roadPatchMeshes.push(r);}
 mkR(0,0,200,10);mkR(-40,0,10,140);mkR(0,0,10,140);mkR(40,0,10,140);mkR(0,-45,120,6);mkR(0,45,120,6);mkR(-60,-60,4,30);
 [-6.5,6.5].forEach(function(z){var sw=new THREE.Mesh(new THREE.PlaneGeometry(200,3),M.side);sw.rotation.x=-Math.PI/2;sw.position.set(0,0.03,z);scene.add(sw);});
 // Puddles
@@ -1958,6 +2177,7 @@ mkR(0,0,200,10);mkR(-40,0,10,140);mkR(0,0,10,140);mkR(40,0,10,140);mkR(0,-45,120
 // City blocks — procedural box buildings (mkB / mkKB)
 placeAllBoxyBuildings();
 setTimeout(tryLoadRandomGraffitiPng,1800);
+setTimeout(function(){ tryLoadJuiced009DecalsStandalone(); },8500);
 
 // Graffiti
 // (legacy mkGr "neon sign" colored rectangles removed — real graffiti is now
@@ -2775,7 +2995,7 @@ mkD(-10,-42);mkD(20,-42);mkD(-60,-62);mkD(60,-15);mkD(-72,22);mkD(72,-32);mkD(28
 (function(){
   var alcx=-60, alcz=-50, alW=12, alD=17;
   var alPad=new THREE.Mesh(new THREE.PlaneGeometry(alW,alD),M.road);
-  alPad.rotation.x=-Math.PI/2;alPad.position.set(alcx,0.03,alcz);alPad.receiveShadow=true;scene.add(alPad);
+  alPad.rotation.x=-Math.PI/2;alPad.position.set(alcx,0.03,alcz);alPad.receiveShadow=true;scene.add(alPad);roadPatchMeshes.push(alPad);
 })();
 if(!spotOverlapsBoxBuilding(-55.9,-47.2,0.6)) mkD(-55.9,-47.2);
 if(!spotOverlapsBoxBuilding(-55.9,-51.0,0.6)) mkD(-55.9,-51.0);
@@ -3267,10 +3487,86 @@ addCookieMissionVisuals();
 scene.add(cookie);
 addC(cookieCenterX,cookieCenterZ,0.6,0.8);
 
-// Cookie's park ground (color updated from house model base when GLB loads)
+// Cookie's park ground (color tinted from house when GLB loads; optional grass texture)
+var cookieParkGroundTint=null;
 var cookieParkGroundMat=new THREE.MeshStandardMaterial({color:0x5f8f6a,emissive:0x2d4a38,emissiveIntensity:0.18,roughness:0.82,metalness:0.04});
+function syncCookieParkGroundAppearance(){
+if(!cookieParkGroundMat)return;
+var tint=cookieParkGroundTint;
+if(cookieParkGroundMat.map&&cookieParkGroundMat.map.image){
+if(tint){cookieParkGroundMat.color.copy(tint).lerp(new THREE.Color(0xffffff),0.58);cookieParkGroundMat.emissive.copy(tint);cookieParkGroundMat.emissiveIntensity=0.11;}
+else{cookieParkGroundMat.color.setHex(0xffffff);cookieParkGroundMat.emissive.setHex(0x1e301e);cookieParkGroundMat.emissiveIntensity=0.085;}
+}else if(tint){cookieParkGroundMat.color.copy(tint);cookieParkGroundMat.emissive.copy(tint);cookieParkGroundMat.emissiveIntensity=0.24;}
+else{cookieParkGroundMat.color.setHex(0x5f8f6a);cookieParkGroundMat.emissive.setHex(0x2d4a38);cookieParkGroundMat.emissiveIntensity=0.18;}
+cookieParkGroundMat.needsUpdate=true;
+}
 var pedG=new THREE.CircleGeometry(5,8);
 var ped=new THREE.Mesh(pedG,cookieParkGroundMat);ped.rotation.x=-Math.PI/2;ped.position.set(cookieCenterX,0.025,cookieCenterZ);scene.add(ped);
+function tryLoadGrassTerrainTexture(){
+if(!renderer||typeof THREE==='undefined'||!THREE.TextureLoader)return;
+var paths=['Grass_01-128x128.png','files/Grass_01-128x128.png'];
+var loader=new THREE.TextureLoader();
+var pi=0;
+function bumpAniso(t){if(renderer&&renderer.capabilities&&renderer.capabilities.getMaxAnisotropy)t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
+function setRepeat(tex,w,h){var ku=0.38;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(Math.max(1.8,w*ku),Math.max(1.8,h*ku));tex.needsUpdate=true;}
+function next(){if(pi>=paths.length)return;var url=paths[pi++];loader.load(url,function(tex){
+if(tex.encoding!==undefined)tex.encoding=THREE.sRGBEncoding;bumpAniso(tex);
+for(var gj=0;gj<grassPatchMeshes.length&&gj<gPs.length;gj++){
+var w=gPs[gj][2],h=gPs[gj][3];
+var map=tex.clone();if(map.encoding!==undefined)map.encoding=THREE.sRGBEncoding;bumpAniso(map);setRepeat(map,w,h);
+var gum=M.grass.clone();gum.map=map;gum.color.setHex(0xffffff);gum.roughness=0.92;gum.metalness=0;gum.needsUpdate=true;
+grassPatchMeshes[gj].material=gum;
+}
+var m2=tex.clone();if(m2.encoding!==undefined)m2.encoding=THREE.sRGBEncoding;bumpAniso(m2);setRepeat(m2,10,10);
+cookieParkGroundMat.map=m2;
+cookieParkGroundMat.roughness=0.84;cookieParkGroundMat.metalness=0.03;
+syncCookieParkGroundAppearance();
+},undefined,next);}
+next();
+}
+tryLoadGrassTerrainTexture();
+
+function tryLoadBrownGroundTerrainTexture(){
+if(!gnd||!renderer||typeof THREE==='undefined'||!THREE.TextureLoader)return;
+var paths=['Grass_11-128x128.png','files/Grass_11-128x128.png'];
+var loader=new THREE.TextureLoader();
+var pi=0;
+function bumpAniso(t){if(renderer&&renderer.capabilities&&renderer.capabilities.getMaxAnisotropy)t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
+function setBrownRepeat(tex,gw,gh){var kd=0.21;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(Math.max(12,gw*kd),Math.max(12,gh*kd));tex.needsUpdate=true;}
+var gw=250,gh=250;
+function next(){if(pi>=paths.length)return;var url=paths[pi++];loader.load(url,function(tex){
+if(tex.encoding!==undefined)tex.encoding=THREE.sRGBEncoding;bumpAniso(tex);
+var map=tex.clone();if(map.encoding!==undefined)map.encoding=THREE.sRGBEncoding;bumpAniso(map);setBrownRepeat(map,gw,gh);
+var dm=M.dirt.clone();dm.map=map;dm.color.setHex(0xffffff);dm.roughness=0.93;dm.metalness=0;dm.needsUpdate=true;
+gnd.material=dm;
+},undefined,next);}
+next();
+}
+tryLoadBrownGroundTerrainTexture();
+
+function tryLoadRoadTerrainTexture(){
+if(!renderer||typeof THREE==='undefined'||!THREE.TextureLoader)return;
+var meshes=typeof roadPatchMeshes!=='undefined'&&roadPatchMeshes?roadPatchMeshes:[];
+if(!meshes.length)return;
+var paths=['road02.jpg','files/road02.jpg','road02.png','files/road02.png'];
+var loader=new THREE.TextureLoader();
+var pi=0;
+function bumpAniso(t){if(renderer&&renderer.capabilities&&renderer.capabilities.getMaxAnisotropy)t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());}
+function setRoadRepeat(tex,w,h){var kr=0.18;tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.repeat.set(Math.max(2,w*kr),Math.max(2,h*kr));tex.needsUpdate=true;}
+function next(){if(pi>=paths.length)return;var url=paths[pi++];loader.load(url,function(tex){
+if(tex.encoding!==undefined)tex.encoding=THREE.sRGBEncoding;bumpAniso(tex);
+for(var ri=0;ri<meshes.length;ri++){
+var mesh=meshes[ri],pg=mesh&&mesh.geometry&&mesh.geometry.parameters;
+if(!pg||pg.width==null||pg.height==null)continue;
+var w=pg.width,h=pg.height;
+var map=tex.clone();if(map.encoding!==undefined)map.encoding=THREE.sRGBEncoding;bumpAniso(map);setRoadRepeat(map,w,h);
+var rm=M.road.clone();rm.map=map;rm.color.setHex(0xffffff);rm.roughness=0.92;rm.metalness=0.02;rm.needsUpdate=true;
+mesh.material=rm;
+}
+},undefined,next);}
+next();
+}
+tryLoadRoadTerrainTexture();
 
 // Cookie's house (parl) — sits just past the play circle, facing Cookie
 var cookieHouseGroup=new THREE.Group();
@@ -3287,11 +3583,10 @@ loadModelInto(cookieHouseGroup,modelPaths.cookieHouse,{clearChildren:true,scale:
   cookieHouseGroup.updateMatrixWorld(true);
   var col=sampleCookieHouseBaseColor(root);
   if(col){
-    col.lerp(new THREE.Color(0xffffff),0.2);
-    cookieParkGroundMat.color.copy(col);
-    cookieParkGroundMat.emissive.copy(col);
-    cookieParkGroundMat.emissiveIntensity=0.24;
-  }
+    cookieParkGroundTint=col.clone();
+    cookieParkGroundTint.lerp(new THREE.Color(0xffffff),0.2);
+    syncCookieParkGroundAppearance();
+  }else{cookieParkGroundTint=null;syncCookieParkGroundAppearance();}
   var bbh=new THREE.Box3().setFromObject(cookieHouseGroup);
   if(isFinite(bbh.min.x)){
     addC((bbh.max.x+bbh.min.x)*0.5,(bbh.max.z+bbh.min.z)*0.5,Math.max((bbh.max.x-bbh.min.x)*0.5+0.12,0.55),Math.max((bbh.max.z-bbh.min.z)*0.5+0.12,0.55));
