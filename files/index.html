@@ -958,7 +958,7 @@ function graffitiLayoutFingerprint(wallPackSig){
     if(!boxBuildings.length) return'0';
     wallPackSig=wallPackSig!==undefined&&wallPackSig!==null?String(wallPackSig):'';
     return String(BLDG_SLOTS?BLDG_SLOTS.length:0)+'|'+String(boxBuildings.length)+'|'+
-      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|'+wallPackSig+'|wwreq0207|norestorev1';
+      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|'+wallPackSig+'|wwreq0207';
   }catch(e){ return'0'; }
 }
 function graffitiOverlapsWindowFront(b, cx, cy, ahw, ahh){
@@ -1080,9 +1080,7 @@ function makeLevelsioFullWallSpec(b, face){
 }
 var HOOD_GUY_WORLD_X=52, HOOD_GUY_WORLD_Z=35;
 var HOOD_GRAFF_GRAFFITI_LS_KEY='hoodHoundGraffitiV1';
-var HOOD_GRAFF_CACHE_VERSION=26;
-/** When false (default), façade layout recomputes every load — avoids stale IndexedDB fingerprints blocking newly added murals. Small perf cost vs cached restore. */
-var HOOD_GRAFF_RESTORE_FROM_STORAGE=false;
+var HOOD_GRAFF_CACHE_VERSION=24;
 function getBoxBuildingIndexNearestExcluding(x,z,ex){
   ex=ex||{};
   if(!boxBuildings.length) return 0;
@@ -1206,14 +1204,6 @@ function applyGraffitiPngToCanvasTexture(texIn, gk){
   try{if(typeof texIn.dispose==='function') texIn.dispose();}catch(e3){}
   return nt;
 }
-function hoodGraffitiPageAssetBase(){
-  try{
-    var loc=window.location, p=(loc.pathname||'').replace(/\\/g,'/');
-    var q=p.lastIndexOf('/');
-    var dir=q>=0?p.slice(0,q+1):'/';
-    return loc.origin+(dir.charAt(0)==='/'?dir:'/'+dir);
-  }catch(egb){return'';}
-}
 function tryLoadRandomGraffitiPng(){
   if(!boxBuildings.length||!window.THREE||!THREE.TextureLoader)return;
   try{
@@ -1221,10 +1211,6 @@ function tryLoadRandomGraffitiPng(){
       localStorage.removeItem(HOOD_GRAFF_GRAFFITI_LS_KEY);
   }catch(ls1){}
   var forcedJuiced=typeof assetCandidates==='function'?assetCandidates(['juiced009.webp','juiced009.png','juiced009.jpg','juiced009.jpeg']):['juiced009.webp','files/juiced009.webp'];
-  var hb=hoodGraffitiPageAssetBase();
-  var wallAbsMust=['wall_windows','wall_windows02','wall_windows03','wall_windows04','wall_windows05','wall_windows06','wall_windows07'];
-  var wallAbs=[], wab;
-  for(wab=0;wab<wallAbsMust.length;wab++) if(hb) wallAbs.push(hb+wallAbsMust[wab]+'.png');
   var forcedWallWin=typeof assetCandidates==='function'?assetCandidates(['wall_windows.png','wall_windows.webp','wall_windows.jpg']):['wall_windows.png','files/wall_windows.png'];
   var wwi, wwn, wallWinExtra=[];
   for(wwi=2;wwi<=7;wwi++){
@@ -1233,7 +1219,7 @@ function tryLoadRandomGraffitiPng(){
       ?assetCandidates(['wall_windows'+wwn+'.png','wall_windows'+wwn+'.webp','wall_windows'+wwn+'.jpg'])
       :['wall_windows'+wwn+'.png','files/wall_windows'+wwn+'.png']);
   }
-  var wallPackFirst=[].concat(wallAbs).concat(forcedWallWin).concat(wallWinExtra);
+  var wallPackFirst=[].concat(forcedWallWin).concat(wallWinExtra);
   var urlOv=getGraffitiImagePathsFromUrl();
   var list=!urlOv||!urlOv.length
     ?wallPackFirst.concat(forcedJuiced).concat(stripWallWindowsFromGraffitiUrlList(getDefaultGraffitiLoadList()))
@@ -1261,17 +1247,14 @@ function tryLoadRandomGraffitiPng(){
     if(!tex||!tex.image||!(tex.image.width>0)) return;
     var gk=graffitiFileKey(srcPath);
     if(gk&&seenGraffKey[gk]) return;
+    if(gk) seenGraffKey[gk]=1;
     if('format' in tex) tex.format=THREE.RGBAFormat;
     tex.minFilter=THREE.LinearMipmapLinearFilter;tex.magFilter=THREE.LinearFilter;
     if('encoding' in tex) tex.encoding=THREE.sRGBEncoding;
     else if('colorSpace' in tex && THREE.SRGBColorSpace) tex.colorSpace=THREE.SRGBColorSpace;
     if(renderer && renderer.capabilities && renderer.capabilities.getMaxAnisotropy) tex.anisotropy=Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    var outTex=null;
-    try{ outTex=applyGraffitiPngToCanvasTexture(tex, gk); }catch(pe){ outTex=null; }
-    var img=outTex&&outTex.image;
-    if(!gk||!outTex||!(img&&(img.width>0||img.naturalWidth>0))) return;
-    seenGraffKey[gk]=1;
-    graffitiTexByKey[gk]=outTex;
+    var outTex=applyGraffitiPngToCanvasTexture(tex, gk);
+    if(gk) graffitiTexByKey[gk]=outTex;
   }
   function makeGraffSpecForBuilding(b, gk){
     if(gk && isFullBleedWallGraffKey(gk)) return makeLevelsioFullWallSpec(b, Math.floor(Math.random()*4));
@@ -1377,7 +1360,7 @@ function tryLoadRandomGraffitiPng(){
     var fp=graffitiLayoutFingerprint(graffitiWallPackSignature(keyList));
     var i,k,st=null;
     try{ st=JSON.parse(localStorage.getItem(HOOD_GRAFF_GRAFFITI_LS_KEY)||'null'); }catch(e1){ st=null; }
-    if(HOOD_GRAFF_RESTORE_FROM_STORAGE&&st && st.v>=HOOD_GRAFF_CACHE_VERSION && st.fp===fp && st.items && st.items.length){
+    if(st && st.v>=HOOD_GRAFF_CACHE_VERSION && st.fp===fp && st.items && st.items.length){
       var valid=true;
       for(i=0;i<st.items.length;i++){
         k=st.items[i].k;
@@ -1652,35 +1635,26 @@ function tryLoadRandomGraffitiPng(){
           if(boxBuildings[sbi]) pushFullBleed(wallWinKey, sbi, ww[2], ww[3]);
         }
       }
-      /** wall_windows02: single façade — keep simple. wall_windows03…07 scatter on many façades without same-key neighbour blocking. */
-      var wallScatterIdx, wallScatterPool=[];
-      for(wallScatterIdx=0;wallScatterIdx<BLDG_SLOTS.length;wallScatterIdx++){
-        if(REMOVED_BLDG_SLOTS[wallScatterIdx]) continue;
-        var WSc=BLDG_SLOTS[wallScatterIdx], wx=WSc[0], wz=WSc[1];
-        wallScatterPool.push([wx,wz,wx+(wx>-35?38:-52),wz+(wz>38?-30:42)]);
-      }
-      shuffleInPlace(wallScatterPool);
-      function pushScatterFullBleedNoNeighbourBlock(gkw, anchors){
-        if(!gkw||!anchors||!anchors.length) return;
-        var si, wwA, wwSbi;
-        for(si=0;si<anchors.length;si++){
-          wwA=anchors[si]; spreadAx=wwA[0]; spreadAz=wwA[1];
-          wwSbi=getBoxBuildingIndexNearestExcluding(spreadAx, spreadAz, excl);
-          if(boxBuildings[wwSbi]) pushFullBleed(gkw, wwSbi, wwA[2], wwA[3]);
+      /** Extra full-bleed façades — two anchors per variant (wall_windows02…07). Keys must load from files/. */
+      var wallWinMore=[
+        ['02',[[-50,-55,15,-62],[-30,-18,-45,0]]],
+        ['03',[[29,-55,8,-62],[72,35,-82,42]]],
+        ['04',[[-74,-68,-50,-82],[85,10,-60,38]]],
+        ['05',[[25,-18,72,-38],[60,55,-45,48]]],
+        ['06',[[-70,-18,-88,-15],[0,80,-18,88]]],
+        ['07',[[20,68,-8,78],[55,-68,48,-75]]]
+      ];
+      for(var wwm=0;wwm<wallWinMore.length;wwm++){
+        var wwr=wallWinMore[wwm], wwk=findGraffKeyExactLower('wall_windows'+wwr[0]);
+        if(!wwk) continue;
+        var wwa2=wwr[1];
+        for(var ww2i=0;ww2i<wwa2.length;ww2i++){
+          var ww2=wwa2[ww2i];
+          spreadAx=ww2[0]; spreadAz=ww2[1];
+          sbi=getBoxBuildingIndexNearestExcludingNoGraffKeyConflict(excl, spreadAx, spreadAz, wwk, items);
+          if(sbi<0||!boxBuildings[sbi]) sbi=getBoxBuildingIndexNearestExcluding(spreadAx, spreadAz, excl);
+          if(boxBuildings[sbi]) pushFullBleed(wwk, sbi, ww2[2], ww2[3]);
         }
-      }
-      var ww02only=findGraffKeyExactLower('wall_windows02');
-      if(ww02only){ pushScatterFullBleedNoNeighbourBlock(ww02only, wallScatterPool.length?[wallScatterPool[0]]:[[-50,-52,15,-60]]]); }
-      var wwExtraNums=['03','04','05','06','07'], wei, wen, wenK;
-      var spotsPerSkin=Math.min(4,Math.max(2,Math.floor(wallScatterPool.length/14)));
-      for(wei=0;wei<wwExtraNums.length;wei++){
-        wen=wwExtraNums[wei]; wenK=findGraffKeyExactLower('wall_windows'+wen);
-        if(!wenK) continue;
-        var poolOff=(wei+1)*(spotsPerSkin+3);
-        var useAnch=[];
-        for(var wwsi=0;wwsi<spotsPerSkin&&wwsi<wallScatterPool.length;wwsi++)
-          useAnch.push(wallScatterPool[(poolOff+wwsi)%wallScatterPool.length]);
-        pushScatterFullBleedNoNeighbourBlock(wenK, useAnch.length?useAnch:wallScatterPool.slice(0,2));
       }
       if(juice009Key){
         /** [ bx, bz, lookX, lookZ ] anchors on primary street-facing rows; gazes toward central E–W arterial (near z≈0). */
