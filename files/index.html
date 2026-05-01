@@ -771,7 +771,14 @@ graffitiPng:['graffiti.webp','mix_spray_jam.webp','cursor_jam.webp','spray_jam.w
   'cursor_2026.webp','juiced009.webp','juiced009.png','juiced009.jpg','juiced009.jpeg','cursor_wall_bleed.webp','levesio_graff.webp',
   'tripo_3D_graff.webp','Cursor_graff 2.webp','Cursor_graff 3.webp','glif_graff 2.webp',
   'Jamdogs_billboard.webp','Biscuit_game_billboard.webp','jamdogs_billboard2.webp',
-  'Vibejam_billboard.webp','glif.webp','sk13_.webp','Soret_wall.webp','bolt_new_transp.webp']};
+  'Vibejam_billboard.webp','glif.webp','sk13_.webp','Soret_wall.webp','bolt_new_transp.webp',
+  'wall_windows.png','wall_windows.webp','wall_windows.jpg',
+  'wall_windows02.png','wall_windows02.webp','wall_windows02.jpg',
+  'wall_windows03.png','wall_windows03.webp','wall_windows03.jpg',
+  'wall_windows04.png','wall_windows04.webp','wall_windows04.jpg',
+  'wall_windows05.png','wall_windows05.webp','wall_windows05.jpg',
+  'wall_windows06.png','wall_windows06.webp','wall_windows06.jpg',
+  'wall_windows07.png','wall_windows07.webp','wall_windows07.jpg']};
 var boxBldgCol=0;
 var BLDG_SLOTS=[[-70,18,12,10,10,0],[-55,20,10,14,12,0],[-30,17,8,8,8,0],[10,18,10,10,10,0],[25,20,8,12,12,0],[65,20,10,13,12,0],[80,18,8,8,8,0],[-70,-18,10,8,10,0],[-55,-20,12,12,12,0],[-30,-18,8,6,8,0],[10,-18,10,9,10,0],[50,-18,10,7,10,0],[65,-20,8,10,8,0],[80,-18,10,6,10,0],[-55,55,14,8,10,0],[-25,55,10,6,8,0],[13,55,12,10,10,0],[29,55,10,7,8,0],[60,55,14,9,10,0],[-50,-55,12,7,10,0],[-25,-55,10,10,8,0],[13,-55,14,8,10,0],[29,-55,10,6,8,0],[60,-55,12,9,10,0],[-74,-52,6,10,8,0],[-50,-52,6,8,8,0],[-74,-68,6,8,12,0],[-50,-68,6,9,8,0],[-29,35,8,7,7,0],[72,35,8,7,7,0],[-29,-36,8,7,7,0],[72,-36,8,7,7,0],[-15,68,8,9,7,0],[20,68,10,8,10,0],[55,68,9,8,7,0],[-15,-68,8,9,7,0],[20,-68,10,8,8,0],[55,-68,9,10,7,0],[-85,10,7,7,14,0],[-85,-10,7,7,16,0],[85,10,7,7,15,0],[85,-10,7,7,13,0],[-85,40,7,8,18,0],[85,40,7,8,16,0],[-85,-40,7,8,17,0],[85,-40,7,8,15,0],[0,80,10,8,20,0],[0,-80,10,8,18,0]];
 // Slots that exist in BLDG_SLOTS but were intentionally NOT placed by
@@ -958,7 +965,7 @@ function graffitiLayoutFingerprint(wallPackSig){
     if(!boxBuildings.length) return'0';
     wallPackSig=wallPackSig!==undefined&&wallPackSig!==null?String(wallPackSig):'';
     return String(BLDG_SLOTS?BLDG_SLOTS.length:0)+'|'+String(boxBuildings.length)+'|'+
-      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|'+wallPackSig+'|wwreq0207';
+      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|'+wallPackSig;
   }catch(e){ return'0'; }
 }
 function graffitiOverlapsWindowFront(b, cx, cy, ahw, ahh){
@@ -973,18 +980,6 @@ function graffitiOverlapsWindowFront(b, cx, cy, ahw, ahh){
 function getDefaultGraffitiLoadList(){
   if(typeof assetCandidates!=='function'||!modelPaths||!modelPaths.graffitiPng) return['graffiti.webp','files/graffiti.webp'];
   return assetCandidates(modelPaths.graffitiPng);
-}
-/** Drops wall_windows* from the default graffiti manifest — they load first via forced wallPack (root + files/ URL fallbacks) so Vite + GitHub Pages stay in sync. */
-function stripWallWindowsFromGraffitiUrlList(arr){
-  var out=[], ax, aq, aqBare, abase;
-  for(ax=0;ax<arr.length;ax++){
-    aq=String(arr[ax]); aqBare=aq.indexOf('?')===-1?aq:aq.slice(0,aq.indexOf('?'));
-    try{ aqBare=aqBare.replace(/\\/g,'/'); }catch(es){}
-    abase=aqBare.slice(Math.max(aqBare.lastIndexOf('/')+1,0));
-    if(/^wall_windows(0[2-7])?\.(png|webp|jpe?g)$/i.test(abase)) continue;
-    out.push(arr[ax]);
-  }
-  return out;
 }
 function getGraffitiKeyMode(){
   try{
@@ -1080,7 +1075,7 @@ function makeLevelsioFullWallSpec(b, face){
 }
 var HOOD_GUY_WORLD_X=52, HOOD_GUY_WORLD_Z=35;
 var HOOD_GRAFF_GRAFFITI_LS_KEY='hoodHoundGraffitiV1';
-var HOOD_GRAFF_CACHE_VERSION=24;
+var HOOD_GRAFF_CACHE_VERSION=23;
 function getBoxBuildingIndexNearestExcluding(x,z,ex){
   ex=ex||{};
   if(!boxBuildings.length) return 0;
@@ -1206,10 +1201,6 @@ function applyGraffitiPngToCanvasTexture(texIn, gk){
 }
 function tryLoadRandomGraffitiPng(){
   if(!boxBuildings.length||!window.THREE||!THREE.TextureLoader)return;
-  try{
-    if(window.location&&(String(window.location.search||'').indexOf('freshGraff=1')>=0))
-      localStorage.removeItem(HOOD_GRAFF_GRAFFITI_LS_KEY);
-  }catch(ls1){}
   var forcedJuiced=typeof assetCandidates==='function'?assetCandidates(['juiced009.webp','juiced009.png','juiced009.jpg','juiced009.jpeg']):['juiced009.webp','files/juiced009.webp'];
   var forcedWallWin=typeof assetCandidates==='function'?assetCandidates(['wall_windows.png','wall_windows.webp','wall_windows.jpg']):['wall_windows.png','files/wall_windows.png'];
   var wwi, wwn, wallWinExtra=[];
@@ -1219,11 +1210,8 @@ function tryLoadRandomGraffitiPng(){
       ?assetCandidates(['wall_windows'+wwn+'.png','wall_windows'+wwn+'.webp','wall_windows'+wwn+'.jpg'])
       :['wall_windows'+wwn+'.png','files/wall_windows'+wwn+'.png']);
   }
-  var wallPackFirst=[].concat(forcedWallWin).concat(wallWinExtra);
   var urlOv=getGraffitiImagePathsFromUrl();
-  var list=!urlOv||!urlOv.length
-    ?wallPackFirst.concat(forcedJuiced).concat(stripWallWindowsFromGraffitiUrlList(getDefaultGraffitiLoadList()))
-    :urlOv.concat(forcedJuiced).concat(forcedWallWin).concat(wallWinExtra);
+  var list=!urlOv||!urlOv.length?getDefaultGraffitiLoadList():urlOv.concat(forcedJuiced).concat(forcedWallWin).concat(wallWinExtra);
   if(!list.length) return;
   (function dedupeLp(){
     var seen={},out=[],qi,qn;for(qi=0;qi<list.length;qi++){
