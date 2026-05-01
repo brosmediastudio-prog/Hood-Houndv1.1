@@ -772,13 +772,7 @@ graffitiPng:['graffiti.webp','mix_spray_jam.webp','cursor_jam.webp','spray_jam.w
   'tripo_3D_graff.webp','Cursor_graff 2.webp','Cursor_graff 3.webp','glif_graff 2.webp',
   'Jamdogs_billboard.webp','Biscuit_game_billboard.webp','jamdogs_billboard2.webp',
   'Vibejam_billboard.webp','glif.webp','sk13_.webp','Soret_wall.webp','bolt_new_transp.webp',
-  'wall_windows.png','wall_windows.webp','wall_windows.jpg',
-  'wall_windows02.png','wall_windows02.webp','wall_windows02.jpg',
-  'wall_windows03.png','wall_windows03.webp','wall_windows03.jpg',
-  'wall_windows04.png','wall_windows04.webp','wall_windows04.jpg',
-  'wall_windows05.png','wall_windows05.webp','wall_windows05.jpg',
-  'wall_windows06.png','wall_windows06.webp','wall_windows06.jpg',
-  'wall_windows07.png','wall_windows07.webp','wall_windows07.jpg']};
+  'wall_windows.png','wall_windows.webp','wall_windows.jpg']};
 var boxBldgCol=0;
 var BLDG_SLOTS=[[-70,18,12,10,10,0],[-55,20,10,14,12,0],[-30,17,8,8,8,0],[10,18,10,10,10,0],[25,20,8,12,12,0],[65,20,10,13,12,0],[80,18,8,8,8,0],[-70,-18,10,8,10,0],[-55,-20,12,12,12,0],[-30,-18,8,6,8,0],[10,-18,10,9,10,0],[50,-18,10,7,10,0],[65,-20,8,10,8,0],[80,-18,10,6,10,0],[-55,55,14,8,10,0],[-25,55,10,6,8,0],[13,55,12,10,10,0],[29,55,10,7,8,0],[60,55,14,9,10,0],[-50,-55,12,7,10,0],[-25,-55,10,10,8,0],[13,-55,14,8,10,0],[29,-55,10,6,8,0],[60,-55,12,9,10,0],[-74,-52,6,10,8,0],[-50,-52,6,8,8,0],[-74,-68,6,8,12,0],[-50,-68,6,9,8,0],[-29,35,8,7,7,0],[72,35,8,7,7,0],[-29,-36,8,7,7,0],[72,-36,8,7,7,0],[-15,68,8,9,7,0],[20,68,10,8,10,0],[55,68,9,8,7,0],[-15,-68,8,9,7,0],[20,-68,10,8,8,0],[55,-68,9,10,7,0],[-85,10,7,7,14,0],[-85,-10,7,7,16,0],[85,10,7,7,15,0],[85,-10,7,7,13,0],[-85,40,7,8,18,0],[85,40,7,8,16,0],[-85,-40,7,8,17,0],[85,-40,7,8,15,0],[0,80,10,8,20,0],[0,-80,10,8,18,0]];
 // Slots that exist in BLDG_SLOTS but were intentionally NOT placed by
@@ -950,22 +944,11 @@ function tryLoadJuiced009DecalsStandalone(){
   }
   next();
 }
-function graffitiWallPackSignature(keyList){
-  if(!keyList||!keyList.length) return'';
-  var w=[], wi, lk;
-  for(wi=0;wi<keyList.length;wi++){
-    lk=String(keyList[wi]).toLowerCase();
-    if(lk==='wall_windows'||(/^wall_windows0[2-7]$/.test(lk))) w.push(lk);
-  }
-  w.sort();
-  return w.join(',');
-}
-function graffitiLayoutFingerprint(wallPackSig){
+function graffitiLayoutFingerprint(){
   try{
     if(!boxBuildings.length) return'0';
-    wallPackSig=wallPackSig!==undefined&&wallPackSig!==null?String(wallPackSig):'';
     return String(BLDG_SLOTS?BLDG_SLOTS.length:0)+'|'+String(boxBuildings.length)+'|'+
-      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|'+wallPackSig;
+      (BLDG_SLOTS&&BLDG_SLOTS[0]?BLDG_SLOTS[0][0]+','+BLDG_SLOTS[0][1]:'')+'|m081|wall_windows_x12';
   }catch(e){ return'0'; }
 }
 function graffitiOverlapsWindowFront(b, cx, cy, ahw, ahh){
@@ -1074,8 +1057,6 @@ function makeLevelsioFullWallSpec(b, face){
   return {face:f, pw:pw, ph:ph, yP:yP, u:0, o:o};
 }
 var HOOD_GUY_WORLD_X=52, HOOD_GUY_WORLD_Z=35;
-var HOOD_GRAFF_GRAFFITI_LS_KEY='hoodHoundGraffitiV1';
-var HOOD_GRAFF_CACHE_VERSION=23;
 function getBoxBuildingIndexNearestExcluding(x,z,ex){
   ex=ex||{};
   if(!boxBuildings.length) return 0;
@@ -1203,15 +1184,8 @@ function tryLoadRandomGraffitiPng(){
   if(!boxBuildings.length||!window.THREE||!THREE.TextureLoader)return;
   var forcedJuiced=typeof assetCandidates==='function'?assetCandidates(['juiced009.webp','juiced009.png','juiced009.jpg','juiced009.jpeg']):['juiced009.webp','files/juiced009.webp'];
   var forcedWallWin=typeof assetCandidates==='function'?assetCandidates(['wall_windows.png','wall_windows.webp','wall_windows.jpg']):['wall_windows.png','files/wall_windows.png'];
-  var wwi, wwn, wallWinExtra=[];
-  for(wwi=2;wwi<=7;wwi++){
-    wwn=(wwi<10?'0':'')+wwi;
-    wallWinExtra=wallWinExtra.concat(typeof assetCandidates==='function'
-      ?assetCandidates(['wall_windows'+wwn+'.png','wall_windows'+wwn+'.webp','wall_windows'+wwn+'.jpg'])
-      :['wall_windows'+wwn+'.png','files/wall_windows'+wwn+'.png']);
-  }
   var urlOv=getGraffitiImagePathsFromUrl();
-  var list=!urlOv||!urlOv.length?getDefaultGraffitiLoadList():urlOv.concat(forcedJuiced).concat(forcedWallWin).concat(wallWinExtra);
+  var list=!urlOv||!urlOv.length?getDefaultGraffitiLoadList():urlOv.concat(forcedJuiced).concat(forcedWallWin);
   if(!list.length) return;
   (function dedupeLp(){
     var seen={},out=[],qi,qn;for(qi=0;qi<list.length;qi++){
@@ -1345,10 +1319,10 @@ function tryLoadRandomGraffitiPng(){
   function placeWhenReady(){
     var keyList=Object.keys(graffitiTexByKey);
     if(!keyList.length) return;
-    var fp=graffitiLayoutFingerprint(graffitiWallPackSignature(keyList));
+    var fp=graffitiLayoutFingerprint();
     var i,k,st=null;
-    try{ st=JSON.parse(localStorage.getItem(HOOD_GRAFF_GRAFFITI_LS_KEY)||'null'); }catch(e1){ st=null; }
-    if(st && st.v>=HOOD_GRAFF_CACHE_VERSION && st.fp===fp && st.items && st.items.length){
+    try{ st=JSON.parse(localStorage.getItem('hoodHoundGraffitiV1')||'null'); }catch(e1){ st=null; }
+    if(st && st.v>=19 && st.fp===fp && st.items && st.items.length){
       var valid=true;
       for(i=0;i<st.items.length;i++){
         k=st.items[i].k;
@@ -1363,18 +1337,6 @@ function tryLoadRandomGraffitiPng(){
         var jHit=false;
         for(i=0;i<st.items.length;i++){ if(st.items[i].k===jjK){ jHit=true; break; } }
         if(!jHit) valid=false;
-      }
-      if(valid){
-        var wnu, wnl, wgk, wgj, wfound;
-        for(wnu=2;wnu<=7&&valid;wnu++){
-          wnl='wall_windows'+(wnu<10?'0':'')+wnu;
-          wgk=null;
-          for(wgj=0;wgj<keyList.length;wgj++) if(String(keyList[wgj]).toLowerCase()===wnl){ wgk=keyList[wgj]; break; }
-          if(!wgk) continue;
-          wfound=false;
-          for(wgj=0;wgj<st.items.length;wgj++){ if(st.items[wgj].k===wgk){ wfound=true; break; } }
-          if(!wfound) valid=false;
-        }
       }
       if(valid){
         var matByKey={};
@@ -1444,15 +1406,6 @@ function tryLoadRandomGraffitiPng(){
     }
     function findGraffKeyByNeedle(needle){
       for(var fki=0;fki<keyList.length;fki++) if(String(keyList[fki]).toLowerCase().indexOf(needle)>=0) return keyList[fki];
-      return null;
-    }
-    function findGraffKeyWallWindowsBase(){
-      for(var wb=0;wb<keyList.length;wb++) if(String(keyList[wb]).toLowerCase()==='wall_windows') return keyList[wb];
-      return null;
-    }
-    function findGraffKeyExactLower(lowerName){
-      var ge;
-      for(ge=0;ge<keyList.length;ge++) if(String(keyList[ge]).toLowerCase()===lowerName) return keyList[ge];
       return null;
     }
     function pushRegularGraff(gk, bi){
@@ -1608,7 +1561,7 @@ function tryLoadRandomGraffitiPng(){
           if(boxBuildings[sbi]) pushFullBleed(ng.k, sbi, spreadAx, spreadAz);
         }
       }
-      var wallWinKey=findGraffKeyWallWindowsBase();
+      var wallWinKey=findGraffKeyByNeedle('wall_windows');
       if(wallWinKey){
         /** Twelve full-bleed window façades: [ bx, bz, faceWX, faceWZ ]. */
         var wwa=[
@@ -1621,27 +1574,6 @@ function tryLoadRandomGraffitiPng(){
           sbi=getBoxBuildingIndexNearestExcludingNoGraffKeyConflict(excl, spreadAx, spreadAz, wallWinKey, items);
           if(sbi<0||!boxBuildings[sbi]) sbi=getBoxBuildingIndexNearestExcluding(spreadAx, spreadAz, excl);
           if(boxBuildings[sbi]) pushFullBleed(wallWinKey, sbi, ww[2], ww[3]);
-        }
-      }
-      /** Extra full-bleed façades — two anchors per variant (wall_windows02…07). Keys must load from files/. */
-      var wallWinMore=[
-        ['02',[[-50,-55,15,-62],[-30,-18,-45,0]]],
-        ['03',[[29,-55,8,-62],[72,35,-82,42]]],
-        ['04',[[-74,-68,-50,-82],[85,10,-60,38]]],
-        ['05',[[25,-18,72,-38],[60,55,-45,48]]],
-        ['06',[[-70,-18,-88,-15],[0,80,-18,88]]],
-        ['07',[[20,68,-8,78],[55,-68,48,-75]]]
-      ];
-      for(var wwm=0;wwm<wallWinMore.length;wwm++){
-        var wwr=wallWinMore[wwm], wwk=findGraffKeyExactLower('wall_windows'+wwr[0]);
-        if(!wwk) continue;
-        var wwa2=wwr[1];
-        for(var ww2i=0;ww2i<wwa2.length;ww2i++){
-          var ww2=wwa2[ww2i];
-          spreadAx=ww2[0]; spreadAz=ww2[1];
-          sbi=getBoxBuildingIndexNearestExcludingNoGraffKeyConflict(excl, spreadAx, spreadAz, wwk, items);
-          if(sbi<0||!boxBuildings[sbi]) sbi=getBoxBuildingIndexNearestExcluding(spreadAx, spreadAz, excl);
-          if(boxBuildings[sbi]) pushFullBleed(wwk, sbi, ww2[2], ww2[3]);
         }
       }
       if(juice009Key){
@@ -1711,7 +1643,7 @@ function tryLoadRandomGraffitiPng(){
         }
       }
     }
-    try{ localStorage.setItem(HOOD_GRAFF_GRAFFITI_LS_KEY, JSON.stringify({v:HOOD_GRAFF_CACHE_VERSION, fp:fp, items:items})); }catch(e2){}
+    try{ localStorage.setItem('hoodHoundGraffitiV1', JSON.stringify({v:22, fp:fp, items:items})); }catch(e2){}
   }
   function onDoneLoad(){ rem--; if(rem===0){ placeWhenReady(); setTimeout(tryLoadJuiced009DecalsStandalone, 550); } }
   for(li=0; li<list.length; li++){(function(path){
